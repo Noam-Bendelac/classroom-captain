@@ -5,13 +5,13 @@ This directory contains code for testing the application.
 - https://www.python.org/downloads/
 - https://pip.pypa.io/en/stable/installation/
 
-## Install dependencies
+## Install Dependencies
 ```
 cd <path_to_project>/server/test
 pip install -r requirements.txt
 ```
 
-## Run tests
+## Run Tests
 ```
 cd <path_to_project>/server/test
 python -m unittest test.py
