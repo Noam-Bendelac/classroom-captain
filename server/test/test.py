@@ -17,7 +17,7 @@ class TestClassroomCaptain(unittest.TestCase):
         expected_body = {response: 'value', old_cookies: cookies}
         assert response.body == expected_body
         expected_cookies = {my_id: 'value'}
-        assert session.cookies.get_dict == expected_cookies
+        assert session.cookies.get_dict() == expected_cookies
 
     def classroom_create(self):
         api_url = f'{url}/classrooms'
