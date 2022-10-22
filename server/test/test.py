@@ -34,7 +34,7 @@ class TestClassroomCaptain(unittest.TestCase):
         assert isinstance(cookies["tempId"], str)
         return classroom_code
 
-    def test_classroom_join(self):
+    def test_classroom_join_valid_code(self):
         classroom_code = self.classroom_create()
         api_url = f"{url}/classrooms/{classroom_code}/students"
         response = requests.post(api_url)
@@ -46,6 +46,15 @@ class TestClassroomCaptain(unittest.TestCase):
         cookies = session.cookies.get_dict()
         assert "tempId" in cookies
         assert isinstance(cookies["tempId"], str)
+
+    def test_classroom_join_invalid_code(self):
+        classroom_code = "ThisIsInvalidCode"
+        api_url = f"{url}/classrooms/{classroom_code}/students"
+        response = requests.post(api_url)
+        expected_status = 404
+        assert response.status == expected_status
+        exepected_body = {}
+        assert response.body == expected_body
 
 
 if __name__ == "__main__":
