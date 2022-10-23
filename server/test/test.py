@@ -12,7 +12,7 @@ class TestClassroomCaptain(unittest.TestCase):
         cookies = session.cookies.get_dict()
         data = {key: "value"}
         response = requests.post(api_url, cookies=cookies, data=data)
-        assert response.status_code == response.codes.ok
+        assert response.status_code == requests.codes.ok
         expected_body = {response: "value", old_cookies: cookies}
         assert response.body == expected_body
         expected_cookies = {my_id: "value"}
@@ -36,7 +36,7 @@ class TestClassroomCaptain(unittest.TestCase):
         classroom_code = self.classroom_create()
         api_url = f"{url}/classrooms/{classroom_code}/students"
         response = requests.post(api_url)
-        assert response.status_code == response.codes.ok
+        assert response.status_code == requests.codes.ok
         exepected_body = {}
         assert response.body == expected_body
         session = requests.Session()
@@ -48,7 +48,7 @@ class TestClassroomCaptain(unittest.TestCase):
         classroom_code = "ThisIsInvalidCode"
         api_url = f"{url}/classrooms/{classroom_code}/students"
         response = requests.post(api_url)
-        assert response.status_code == response.codes.not_found
+        assert response.status_code == requests.codes.not_found
         exepected_body = {}
         assert response.body == expected_body
 
