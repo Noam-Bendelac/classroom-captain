@@ -1,8 +1,8 @@
 import requests
 import unittest
+import sys
 
-# TODO replace this with actual url
-url = ""
+url = sys.argv[2]
 
 
 class TestClassroomCaptain(unittest.TestCase):
