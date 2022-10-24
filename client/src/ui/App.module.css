@@ -1,38 +1,212 @@
 .app {
-  text-align: center;
-}
 
-.logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .logo {
-    animation: logoSpin infinite 20s linear;
-  }
 }
 
 .header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  background: #E1EEF5;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+  z-index:  '9999'!important;
+  margin-top: -17px;
+  height: 115px;
+  width: 100%;
 }
 
 .link {
   color: #61dafb;
 }
 
-@keyframes logoSpin {
-  from {
-    transform: rotate(0deg);
+.header ul{
+  display: flex;
+  flex-direction: row;
+  list-style: none;
+  align-items: start baseline;
+  justify-content: space-between;  
+  padding-top: 5px;
+}
+.header .classInfo{
+  display: flex;
+  flex-direction: row;
+  list-style: none;
+  align-items: start ;
+  justify-content: space-between;  
+}
+
+
+.header ul .classId{
+  font-family: 'Paytone One';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 60px;
+  line-height: 68.5%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 180px;
+  align-self: end;
+  justify-self: end;
   }
-  to {
-    transform: rotate(360deg);
+
+  .header ul .topic{
+    font-family: 'Paytone One';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 38px;
+    line-height: 46px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: 0px;
   }
+
+  .header ul .students{
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    align-self: end;
+    padding: 9px 0px;
+    margin-left: 50px;
+
+    width: 122px;
+    height: 63px;
+    
+    /* Neutral 150 */
+    
+    background: #C8DAE3;
+    /* Mode switch shadows */
+    
+    box-shadow: 0px 0px 25px -2px rgba(0, 0, 0, 0.25), inset 3px 3px 20px -2px rgba(0, 0, 0, 0.12);
+    border-radius: 15px;
+    
+    /* Inside auto layout */
+    
+    flex: none;
+    order: 2;
+    flex-grow: 0;
+    
+    }
+  
+
+.sidebar{
+  margin-top: 0px;
+  width: 20vw;
+  height: 87vh;
+  background-color: white;
+  padding-top: 30px ;
+  display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 12px;
+
+background: #FFFFFF;
+justify-content: flex-start;
+box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+z-index: 1!important;
+}
+
+.sidebar ul{
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  align-items: start;
+  justify-content: space-between;  
+  margin-top: 10px;
+  margin-left: -50px;
+  font-weight: 400;
+font-size: 24px;
+line-height: 29px;
+}
+
+.sidebar ul li{
+margin: 10px 10px 10px 30px;
+}
+
+
+
+
+
+
+.switch {
+  position: relative;
+  display: flex;
+  width: 230px;
+  height: 60px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 25px;
+  left: -50px;
+  right: 50px;
+  bottom: -25px;
+  background-color: #C8DAE3;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "Explorer";
+  height:22px;
+  width: 90px;
+  left: 4px;
+  bottom: 4px;
+  padding: 15px;
+  background-color: #75CEFA;
+  -webkit-transition: .4s;
+  transition: .4s;
+  font-weight: 400;
+font-size: 24px;
+line-height: 20px;
+}
+
+
+
+input:checked + .slider {
+  background-color: #C8DAE3;
+}
+
+input:focus + .slider {
+  background-color: #C8DAE3;
+}
+
+input:checked + .slider:before {
+  background: #FFD23F;
+  content: "Captain";
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(102px);
+}
+
+/* Rounded sliders */
+.slider {
+  border-radius: 40px;
+}
+
+.slider:before {
+  border-radius: 40px;
+}
+
+img{
+  margin-top: 30px;
+  margin-right: -40px;
+  width: 15px;
+  height: 43px;
+
 }
