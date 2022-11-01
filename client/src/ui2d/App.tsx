@@ -1,6 +1,7 @@
 import React from 'react';
 import Back from './back.png';
 import styles from './App.module.css';
+import { UI3D } from 'ui3d/UI3D'
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
             </li>
           </ul>
       </div>
+      <UI3D />
     </div>
   );
 }
