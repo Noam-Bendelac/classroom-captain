@@ -1,26 +1,55 @@
 import React from 'react';
-import logo from './logo.svg';
+import Back from './back.png';
 import styles from './App.module.css';
 import { UI3D } from 'ui3d/UI3D'
 
 function App() {
   return (
     <div className={styles.app}>
+      <header className={styles.header}>
+        <ul>
+        <img src={Back} alt="back" /> 
+            <li className={styles.topic}>
+              <li style={{ fontSize: 15}}> Physics / Electricity and Magnetism</li>
+              Ch 29. The Magnetic Field
+              </li>
+
+          <ul className={styles.classinfo}>
+            <li className={styles.classId}>
+              <li style={{ fontSize: 20 }}>Class Code</li>
+              ABC123
+              </li>
+
+            <li className={styles.students}>
+              <li style={{ fontSize: 40 }}>23</li>
+              Explorer
+              </li>
+          </ul>
+
+          <li>
+            <label className={styles.switch}>
+              <input type="checkbox"></input>
+              <span className={styles.slider}>
+              </span>
+            </label>
+          </li>
+
+        </ul>
+      </header>
+      <div className={styles.sidebar}>
+          <ul>
+            <li>Chapter 1
+                <li> Section 1</li>
+                <li> Section 2</li>
+                <li> Section 3</li>
+            </li>
+            <li>Chapter 2
+            <li> Section 1</li>
+                <li> Section 2</li>
+            </li>
+          </ul>
+      </div>
       <UI3D />
-      {/* <header className={styles.header}>
-        <img src={logo} className={styles.logo} alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className={styles.link}
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header> */}
     </div>
   );
 }
