@@ -8,14 +8,14 @@ url = sys.argv[2]
 class TestClassroomCaptain(unittest.TestCase):
     def test_api_endpoint(self):
         api_url = f"{url}/test"
-        # this will need some work when the /test endpoint is implemented
+        # TODO this will need some work when the /test endpoint is implemented
         session = requests.Session()
         cookies = session.cookies.get_dict()
         data = {"key": "value"}
         response = requests.post(api_url, cookies=cookies, data=data)
         self.assertEqual(response.status_code, requests.codes.ok)
-        expected_body = {response: "value", old_cookies: cookies}
-        self.assertEqual(response.body, expected_body)
+        expected_body = {"response": "value", "old_cookies": cookies}
+        self.assertEqual(response.json(), expected_body)
         expected_cookies = {"my_id": "value"}
         self.assertEqual(session.cookies.get_dict(), expected_cookies)
 
