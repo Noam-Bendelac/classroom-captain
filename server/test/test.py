@@ -18,6 +18,7 @@ class TestClassroomCaptain(unittest.TestCase):
         self.assertEqual(response.json(), expected_body)
         expected_cookies = {"my_id": "value"}
         self.assertEqual(session.cookies.get_dict(), expected_cookies)
+        session.close()
 
     def classroom_create(self):
         api_url = f"{url}/classrooms"
