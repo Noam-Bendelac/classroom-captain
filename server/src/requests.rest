@@ -1,0 +1,7 @@
+POST https://localhost:3000/classroom
+
+content-type: application/json
+
+{
+    "user": "Teacher"
+}
