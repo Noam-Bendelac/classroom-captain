@@ -1,11 +1,13 @@
 import React from 'react';
 import logo from './logo.svg';
 import styles from './App.module.css';
+import { UI3D } from 'ui3d/UI3D'
 
 function App() {
   return (
     <div className={styles.app}>
-      <header className={styles.header}>
+      <UI3D />
+      {/* <header className={styles.header}>
         <img src={logo} className={styles.logo} alt="logo" />
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
@@ -18,7 +20,7 @@ function App() {
         >
           Learn React
         </a>
-      </header>
+      </header> */}
     </div>
   );
 }
