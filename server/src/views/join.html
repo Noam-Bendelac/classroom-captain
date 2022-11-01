@@ -1,0 +1,17 @@
+<form id="form" action="" method="post">
+    <label for="cid">Enter Classroom ID:</label><br>
+    <input type="text" id="cid" name="cid"><br>
+    <button type="submit">Submit</button>
+  </form>
+  <p id="result"></p>
+  <script>
+    const form = document.getElementById('form')
+    form.addEventListener('submit', function(ev) {
+      ev.preventDefault()
+      fetch(`/classrooms/${new FormData(form).get('cid')}/students`, {
+        method: 'POST',
+      }).then(resp => {
+        document.getElementById('result').innerText = `${resp.status} ${resp.statusText}`
+      })
+    })
+  </script>
