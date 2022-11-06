@@ -1,55 +1,22 @@
-import React from 'react';
-import Back from './back.png';
+import React, { useRef } from 'react';
 import styles from './App.module.css';
 import { UI3D } from 'ui3d/UI3D'
+import { Header } from 'ui2d/Header';
+import { Sidebar } from 'ui2d/Sidebar';
 
 function App() {
+  const canvasPanelRef = useRef<HTMLDivElement>(null)
+  
   return (
     <div className={styles.app}>
-      <header className={styles.header}>
-        <ul>
-        <img src={Back} alt="back" /> 
-            <li className={styles.topic}>
-              <li style={{ fontSize: 15}}> Physics / Electricity and Magnetism</li>
-              Ch 29. The Magnetic Field
-              </li>
-
-          <ul className={styles.classinfo}>
-            <li className={styles.classId}>
-              <li style={{ fontSize: 20 }}>Class Code</li>
-              ABC123
-              </li>
-
-            <li className={styles.students}>
-              <li style={{ fontSize: 40 }}>23</li>
-              Explorer
-              </li>
-          </ul>
-
-          <li>
-            <label className={styles.switch}>
-              <input type="checkbox"></input>
-              <span className={styles.slider}>
-              </span>
-            </label>
-          </li>
-
-        </ul>
-      </header>
-      <div className={styles.sidebar}>
-          <ul>
-            <li>Chapter 1
-                <li> Section 1</li>
-                <li> Section 2</li>
-                <li> Section 3</li>
-            </li>
-            <li>Chapter 2
-            <li> Section 1</li>
-                <li> Section 2</li>
-            </li>
-          </ul>
+      <Header className={styles.header} />
+      <div className={styles.mainContent}>
+        <Sidebar className={styles.sidebar} />
+        <div ref={canvasPanelRef} className={styles.canvasPanel}>
+          <UI3D parentRef={canvasPanelRef} />
+          {/* possibly more ui on top of canvas */}
+        </div>
       </div>
-      <UI3D />
     </div>
   );
 }

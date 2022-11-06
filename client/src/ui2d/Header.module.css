@@ -1,0 +1,149 @@
+
+
+
+.header {
+  height: 125px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-inline: 30px;
+  
+  background: var(--neutral-100);
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+}
+
+
+
+
+.left, .right {
+  display: flex;
+  align-items: center;
+}
+.left {
+  gap: 24px;
+}
+.right {
+  gap: 28px;
+}
+
+.back {
+  width: 15px;
+  height: 43px;
+}
+
+
+
+.topicContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.subject {
+  font: var(--cabin-15);
+}
+.topic {
+  font: var(--cabin-38);
+}
+
+
+.classCodeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-bottom: 5px;
+}
+.classCodeLabel {
+  font: var(--cabin-15);
+  line-height: 0.92;
+}
+.classCode {
+  font: var(--paytone-one-70);
+  margin-right: -3px;
+}
+
+.studentsContainer {
+  width: 122px;
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 9px 0px;
+  
+  background: var(--neutral-150);
+  box-shadow: 0px 0px 25px -2px rgba(0, 0, 0, 0.25), inset 3px 3px 20px -2px rgba(0, 0, 0, 0.12);
+  border-radius: 15px;
+}
+.students {
+  font: var(--cabin-24);
+  font-size: 34px;
+  line-height: 0.8;
+}
+.studentsLabel {
+  font: var(--cabin-15);
+}
+
+
+
+
+.switch {
+  width: 236px;
+  height: 50px;
+  padding: 5px;
+  display: flex;
+  align-items: stretch;
+  
+  /* big number to guarantee enough */
+  border-radius: 100px;
+  border: none;
+  box-shadow: 0px 0px 25px -2px rgba(0, 0, 0, 0.25), inset 3px 3px 20px -2px rgba(0, 0, 0, 0.12);
+  background-color: var(--neutral-150);
+  
+  font: var(--cabin-24);
+  color: var(--gray-600);
+}
+.switchContents {
+  flex: 1;
+  position: relative;
+}
+
+.switchSelected {
+  color: black;
+}
+.switchText {
+  width: 114px;
+  height: 100%;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.explorerText {
+  composes: switchText;
+  left: 0;
+}
+.captainText {
+  composes: switchText;
+  right: 0;
+}
+.switchIndicator {
+  position: absolute;
+  transition: left, background-color;
+  transition-duration: 0.4s;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 114px;
+  border-radius: 100px;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.15), inset -9px -9px 30px rgba(0, 0, 0, 0.1);
+}
+.switchIndicator.captain {
+  /* magic number from figma */
+  left: 112px;
+  background-color: var(--captain);
+}
+.switchIndicator.explorer {
+  background-color: var(--explorer-300);
+}
+
+
