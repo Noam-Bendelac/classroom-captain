@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Canvas, useThree, useLoader } from '@react-three/fiber'
 import { Environment, OrthographicCamera } from '@react-three/drei'
 import { Color, DoubleSide, Euler, TextureLoader } from 'three'
@@ -6,17 +6,25 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 
 
 
-export function UI3D() {
-  
-  
+export function UI3D({
+  parentRef,
+}: {
+  parentRef: React.RefObject<HTMLDivElement>,
+}) {
   return <Canvas>
-    <Scene />
+    <Scene parentRef={parentRef} />
   </Canvas>
 }
 
 
-function Scene() {
+function Scene({
+  parentRef,
+}: {
+  parentRef: React.RefObject<HTMLDivElement>,
+}) {
   useOrbitControls()
+  
+  useProperResize(parentRef)
   
   return <>
     <axesHelper />
@@ -162,6 +170,31 @@ function FrontSection() {
   </mesh>
 }
 
+
+function useProperResize(parentRef: React.RefObject<HTMLDivElement>) {
+  const { camera, gl, invalidate } = useThree(({ camera, gl, invalidate }) => ({ camera, gl, invalidate }))
+  
+  useEffect(() => {
+    const handler = () => {
+      console.log(parentRef)
+      if (!parentRef.current) return;
+      const width  = parentRef.current.clientWidth;
+      const height = parentRef.current.clientHeight;
+      
+      // camera.aspect = width / height;
+      // camera.updateProjectionMatrix();
+      
+      gl.setSize(width, height, false);
+      
+      // invalidate()
+      // this.renderer.render(this.scene, this.camera);
+    }
+    // window.addEventListener('resize', handler)
+    // return () => window.removeEventListener('resize', handler)
+    parentRef.current?.addEventListener('resize', handler)
+    return () => parentRef.current?.removeEventListener('resize', handler)
+  }, [camera, gl, invalidate, parentRef])
+}
 
 
 function useOrbitControls() {

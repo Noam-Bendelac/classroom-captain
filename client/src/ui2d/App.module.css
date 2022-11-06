@@ -6,7 +6,9 @@
 }
 
 .header {
-  z-index: 1;
+  z-index: 2;
+  /* react-three-fiber canvas can be greedy, so don't shrink */
+  flex-shrink: 0;
 }
 
 
@@ -18,10 +20,16 @@
 
 .sidebar {
   width: 20vw;
+  /* react-three-fiber canvas can be greedy, so don't shrink */
+  flex-shrink: 0;
+  z-index: 1;
 }
 
 .canvasPanel {
   flex-grow: 1;
+  /* don't resize to child canvas, so we can measure this div's size */
+  overflow: hidden;
+  background: var(--neutral-20);
 }
 
 
