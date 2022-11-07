@@ -1,8 +1,10 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef } from 'react'
 import { Canvas, useThree, useLoader } from '@react-three/fiber'
-import { Environment, OrthographicCamera } from '@react-three/drei'
-import { Color, DoubleSide, Euler, TextureLoader } from 'three'
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
+import { Environment, OrbitControls as OrbitControlsDrei, OrthographicCamera } from '@react-three/drei'
+import { Color, DoubleSide, TextureLoader } from 'three'
+import { OrbitControls } from 'three-stdlib'
+import { ControllerContext } from 'controller/controller'
+import { useStore } from 'zustand'
 
 
 
@@ -22,86 +24,61 @@ function Scene({
 }: {
   parentRef: React.RefObject<HTMLDivElement>,
 }) {
-  useOrbitControls()
+  const controlsRef = useRef<OrbitControls>(null)
+  
+  const store = useContext(ControllerContext)
+  useEffect(() => store.subscribe(
+    ({ cameraPosition }) => cameraPosition,
+    cameraPosition => {
+      // receive camera position pushes from central state
+      if (cameraPosition) {
+        controlsRef.current?.object.position.copy(cameraPosition)
+        controlsRef.current?.update()
+      }
+    }
+  ))
+  
+  const onCameraChange = useStore(store, ({ onCameraChange }) => onCameraChange)
+  
+  const camera = useThree(({ camera }) => camera)
   
   useProperResize(parentRef)
   
   return <>
     <axesHelper />
+    
     <OrthographicCamera
       makeDefault
       // left={-5} right={5}
       // top={50} bottom={-50}
       zoom={50}
+      position={[3,3,3]}
     />
+    
+    <OrbitControlsDrei
+      // ref={controlsRef}
+      onChange={() => {
+        onCameraChange(camera.position)
+      }}
+    />
+    
     <Environment files={'/assets/belfast_sunset_puresky_1k.hdr'} />
     
-    <LeftSection />
-    <FrontSection />
-    <Copper3 />
+    <SceneContents />
   </>
   
 }
 
 
-function Copper1() {
-  // mesh phong material
+function SceneContents() {
   return <>
-    
-    <directionalLight
-      position={[0, 5, 4]}
-      intensity={0.8}
-    />
-    <directionalLight
-      position={[0, 1, -4]}
-      intensity={0.5}
-    />
-    <ambientLight
-      // color={new Color(1, 1, 1)}
-      intensity={0.09}
-    />
-    <mesh>
-      <torusGeometry args={[
-        2, 0.5,
-        16, 50,
-      ]} />
-      
-      <meshPhongMaterial
-        color={new Color().setHSL(18/360, 1, 0.7).convertSRGBToLinear()}
-        specular={new Color().setHSL(23/360, 1, 0.5).convertSRGBToLinear()}
-        shininess={40}
-      />
-    </mesh>
+    <LeftSection />
+    <FrontSection />
+    <Copper3 />
   </>
 }
-function Copper2() {
-  // mesh standard material (pbr) with no environment
-  return <>
-    <directionalLight
-      position={[0, 5, 4]}
-      intensity={1.8}
-    />
-    <directionalLight
-      position={[0, 1, -4]}
-      intensity={1.5}
-    />
-    <ambientLight
-      // color={new Color(1, 1, 1)}
-      intensity={0.2}
-    />
-    <mesh>
-      <torusGeometry args={[
-        2, 0.5,
-        16, 50,
-      ]} />
-      <meshStandardMaterial
-        color={new Color().setHSL(18/360, 1.0, 0.68).convertSRGBToLinear()}
-        metalness={0.6}
-        roughness={0.4}
-      />
-    </mesh>
-  </>
-}
+
+
 function Copper3() {
   // mesh standard material (pbr) with environment
   
@@ -172,40 +149,21 @@ function FrontSection() {
 
 
 function useProperResize(parentRef: React.RefObject<HTMLDivElement>) {
-  const { camera, gl, invalidate } = useThree(({ camera, gl, invalidate }) => ({ camera, gl, invalidate }))
+  const gl = useThree(({ gl }) => gl)
   
   useEffect(() => {
     const handler = () => {
-      console.log(parentRef)
+      // console.log(parentRef)
       if (!parentRef.current) return;
       const width  = parentRef.current.clientWidth;
       const height = parentRef.current.clientHeight;
       
-      // camera.aspect = width / height;
-      // camera.updateProjectionMatrix();
-      
       gl.setSize(width, height, false);
-      
-      // invalidate()
-      // this.renderer.render(this.scene, this.camera);
     }
-    // window.addEventListener('resize', handler)
-    // return () => window.removeEventListener('resize', handler)
-    parentRef.current?.addEventListener('resize', handler)
-    return () => parentRef.current?.removeEventListener('resize', handler)
-  }, [camera, gl, invalidate, parentRef])
+    const parent = parentRef.current
+    parent?.addEventListener('resize', handler)
+    return () => parent?.removeEventListener('resize', handler)
+  }, [gl, parentRef])
 }
 
 
-function useOrbitControls() {
-  const { camera, gl } = useThree()
-  useEffect(() => {
-    const controls = new OrbitControls(camera, gl.domElement)
-    controls.maxDistance = 100
-    camera.position.set(3, 3, 3)
-    controls.update()
-    return () => {
-      controls.dispose()
-    }
-  }, [camera, gl])
-}
