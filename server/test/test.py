@@ -1,3 +1,5 @@
+import asyncio
+import websockets
 import requests
 import unittest
 import sys
@@ -7,8 +9,8 @@ url = "https://www.google.com"
 
 class TestClassroomCaptain(unittest.TestCase):
     def test_api_endpoint(self):
-        api_url = f"{url}/test"
         # TODO this will need some work after corresponding api is implemented
+        api_url = f"{url}/test"
         session = requests.Session()
         cookies = session.cookies.get_dict()
         data = {"key": "value"}
@@ -20,10 +22,10 @@ class TestClassroomCaptain(unittest.TestCase):
         self.assertEqual(session.cookies.get_dict(), expected_cookies)
         session.close()
 
-    def classroom_create(self):
+    def classroom_create(self, cookies=None):
         api_url = f"{url}/classrooms"
         teacher_session = requests.Session()
-        response = teacher_session.post(api_url)
+        response = teacher_session.post(api_url, cookies=cookies)
         self.assertEqual(response.status_code, requests.codes.created)
         self.assertEqual(len(response.json()), 1)
         self.assertTrue("classroomCode" in response.json())
@@ -55,6 +57,30 @@ class TestClassroomCaptain(unittest.TestCase):
         self.assertEqual(response.status_code, requests.codes.not_found)
         expected_body = {}
         self.assertEqual(response.json(), expected_body)
+
+    def test_websocket_functionality(self):
+        # TODO this will need some work after corresponding api is implemented
+        async def create_connection(websocket_url):
+            async with websockets.connect(websocket_url) as websocket:
+                return websocket
+        async def handler(websocket):
+            async for message in websocket:
+                return message
+        student_websocket_url = ""
+        teacher_websocket_url = ""
+        student_websocket = await create_connection(student_websockets_url)
+        teacher_websocket = await create_connection(teacher_websockets_url)
+        student_cookies = student_websocket.request_header["Cookie"]
+        teacher_cookies = teacher_websocket.request_header["Cookie"]
+        classroom_code = self.classroom_create(teacher_cookies)
+        student_api_url = f"{url}/classrooms/{classroom_code}/students"
+        student_session = requests.Session()
+        response = student_session.post(student_api_url, cookies=student_cookies)
+        student_session.close()
+        teacher_send_message = "test message"
+        await teacher_websocket.send(teacher_send_message)
+        student_recv_message = await handler(student_websocket)
+        self.assertEqual(student_recv_message, teacher_send_message)
 
 
 if __name__ == "__main__":
