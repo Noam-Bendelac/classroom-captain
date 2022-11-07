@@ -13,7 +13,7 @@ pip install -r requirements.txt
 ```
 
 ## Run Tests
-- Edit test.py and change the value of `url` variable to the website's url.
+- Edit following variables in test.py: `url` (website's url), `student_websocket_url` and `teacher_websocket_url`.
 - Replace `<path_to_project>` with the path of the project.
 ```
 cd <path_to_project>/server/test
