@@ -13,8 +13,9 @@ pip install -r requirements.txt
 ```
 
 ## Run Tests
-Replace <path_to_project> with the path of the project and <URL> with the website's URL.
+- Edit test.py and change the value of "url" variabe to the website's url.
+- Replace <path_to_project> with the path of the project.
 ```
 cd <path_to_project>/server/test
-python -m unittest test.py <URL>
+python -m unittest test.py
 ```

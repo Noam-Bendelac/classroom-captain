@@ -2,13 +2,13 @@ import requests
 import unittest
 import sys
 
-url = sys.argv[2]
+url = "https://www.google.com"
 
 
 class TestClassroomCaptain(unittest.TestCase):
     def test_api_endpoint(self):
         api_url = f"{url}/test"
-        # TODO this will need some work when the /test endpoint is implemented
+        # TODO this will need some work after corresponding api is implemented
         session = requests.Session()
         cookies = session.cookies.get_dict()
         data = {"key": "value"}
