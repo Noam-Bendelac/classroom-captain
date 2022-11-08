@@ -66,10 +66,12 @@ class TestClassroomCaptain(unittest.TestCase):
         _ = student_session.post(student_api_url)
         teacher_temp_id = teacher_session.cookies.get_dict()["tempId"]
         student_temp_id = student_session.cookies.get_dict()["tempId"]
-        teacher_websocket = websocket.create_connection(self.websocket_url,
-                                                        cookie=teacher_temp_id)
-        student_websocket = websocket.create_connection(self.websocket_url,
-                                                        cookie=student_temp_id)
+        teacher_websocket = websocket.create_connection(
+            self.websocket_url, cookie=teacher_temp_id
+        )
+        student_websocket = websocket.create_connection(
+            self.websocket_url, cookie=student_temp_id
+        )
         teacher_send_message = "test message"
         teacher_websocket.send(teacher_send_message)
         student_recv_message = student_websocket.recv()
