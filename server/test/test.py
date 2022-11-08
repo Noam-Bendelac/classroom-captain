@@ -1,5 +1,4 @@
-import asyncio
-import websockets
+import websocket
 import requests
 import unittest
 import sys
@@ -22,10 +21,10 @@ class TestClassroomCaptain(unittest.TestCase):
         self.assertEqual(session.cookies.get_dict(), expected_cookies)
         session.close()
 
-    def classroom_create(self, cookies=None):
+    def classroom_create(self):
         api_url = f"{url}/classrooms"
         teacher_session = requests.Session()
-        response = teacher_session.post(api_url, cookies=cookies)
+        response = teacher_session.post(api_url)
         self.assertEqual(response.status_code, requests.codes.created)
         self.assertEqual(len(response.json()), 1)
         self.assertTrue("classroomCode" in response.json())
@@ -34,11 +33,10 @@ class TestClassroomCaptain(unittest.TestCase):
         cookies = teacher_session.cookies.get_dict()
         self.assertTrue("tempId" in cookies)
         self.assertIsInstance(cookies["tempId"], str)
-        teacher_session.close()
-        return classroom_code
+        return (classroom_code, teacher_session)
 
     def test_classroom_join_valid_code(self):
-        classroom_code = self.classroom_create()
+        classroom_code, teacher_session = self.classroom_create()
         api_url = f"{url}/classrooms/{classroom_code}/students"
         student_session = requests.Session()
         response = student_session.post(api_url)
@@ -48,6 +46,7 @@ class TestClassroomCaptain(unittest.TestCase):
         cookies = student_session.cookies.get_dict()
         self.assertTrue("tempId" in cookies)
         self.assertIsInstance(cookies["tempId"], str)
+        teacher_session.close()
         student_session.close()
 
     def test_classroom_join_invalid_code(self):
@@ -60,27 +59,25 @@ class TestClassroomCaptain(unittest.TestCase):
 
     def test_websocket_functionality(self):
         # TODO this will need some work after corresponding api is implemented
-        async def create_connection(websocket_url):
-            async with websockets.connect(websocket_url) as websocket:
-                return websocket
-        async def handler(websocket):
-            async for message in websocket:
-                return message
-        student_websocket_url = ""
-        teacher_websocket_url = ""
-        student_websocket = await create_connection(student_websockets_url)
-        teacher_websocket = await create_connection(teacher_websockets_url)
-        student_cookies = student_websocket.request_header["Cookie"]
-        teacher_cookies = teacher_websocket.request_header["Cookie"]
-        classroom_code = self.classroom_create(teacher_cookies)
+        classroom_code, teacher_session = self.classroom_create()
         student_api_url = f"{url}/classrooms/{classroom_code}/students"
         student_session = requests.Session()
-        response = student_session.post(student_api_url, cookies=student_cookies)
-        student_session.close()
+        _ = student_session.post(student_api_url)
+        teacher_temp_id = teacher_session.cookies.get_dict()["tempId"]
+        student_temp_id = student_session.cookies.get_dict()["tempId"]
+        websocket_url = "ws://echo.websocket.events"
+        teacher_websocket = websocket.create_connection(websocket_url,
+                                                        cookie=teacher_temp_id)
+        student_websocket = websocket.create_connection(websocket_url,
+                                                        cookie=student_temp_id)
         teacher_send_message = "test message"
-        await teacher_websocket.send(teacher_send_message)
-        student_recv_message = await handler(student_websocket)
+        teacher_websocket.send(teacher_send_message)
+        student_recv_message = student_websocket.recv()
         self.assertEqual(student_recv_message, teacher_send_message)
+        teacher_session.close()
+        student_session.close()
+        teacher_websocket.close()
+        student_websocket.close()
 
 
 if __name__ == "__main__":
