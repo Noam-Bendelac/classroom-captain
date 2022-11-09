@@ -1,5 +1,7 @@
 const express = require("express");
 
+const ws = require('ws')
+
 
 const bodyParser = require("body-parser")
   
@@ -12,6 +14,7 @@ app.set('view engine', 'ejs');
 
 app.use(express.json());
 const cookieParser = require('cookie-parser'); // in order to read cookie sent from client
+const cookie = require('cookie')
 // Creating session 
 app.use(cookieParser('sanath'));
 app.use(bodyParser.urlencoded({
@@ -20,42 +23,43 @@ app.use(bodyParser.urlencoded({
 const port = 1234;
 
 
-// "type definitions" of records, and tables of records:
+// class definitions of records with jsdoc type definitions for vscode
+// autocomplete, and tables and indexes of records:
 
 class Teacher {
-  // string
+  /** @type {string} */
   id = generateId()
-  // websocket connection instance
+  /** @type {ws.WebSocket} */
   connection = null
   
   constructor() {
     teachers.set(this.id, this)
   }
 }
-// teachers: Map<teacher id -> Teacher>
+/** @type {Map<string, Teacher>} */
 var teachers = new Map()
 
 class Student {
-  // string
+  /** @type {string} */
   id = generateId()
-  // websocket connection instance
+  /** @type {ws.WebSocket} */
   connection = null
   
   constructor() {
     students.set(this.id, this)
   }
 }
-// students: Map<student id -> Student>
+/** @type {Map<string, Student>} */
 var students = new Map();
 
 // Classroom has a dependency on teacher and students, so it manages the indexes
 // indexTeacherToClassroom and indexStudentToClassroom
 class Classroom {
-  // string
+  /** @type {string} */
   id = generateId()
-  // string
+  /** @type {string} */
   teacherId
-  // string[]
+  /** @type {string[]} */
   studentIds = []
   
   constructor(teacherId) {
@@ -68,12 +72,14 @@ class Classroom {
     indexStudentToClassroom.set(studentId, this.id)
   }
 }
-// classrooms: Map<classroom id -> Classroom>
+/** @type {Map<string, Classroom>} */
 var classrooms = new Map();
 
 
 // additional indexes for accessing records from ids
+/** @type {Map<string, Classroom>} */
 var indexTeacherToClassroom = new Map();
+/** @type {Map<string, Classroom>} */
 var indexStudentToClassroom = new Map();
 
 
@@ -92,7 +98,7 @@ app.get("/join", (req, res) => {
 });
 
 
-// api
+// HTTP REST api
 
 app.post('/classrooms', (req,res)=>{
   
@@ -130,6 +136,46 @@ app.post("/classrooms/:classroomId/students", (req, res) => {
   }
 });
 
-app.listen(port, () => {
+const httpServer = app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
 });
+
+
+// websocket api
+
+const wsServer = new ws.WebSocketServer({ server: httpServer })
+
+wsServer.on('connection', (connection, req) => {
+  const cookies = cookie.parse(req.headers.cookie)
+  console.log('connection', cookies)
+  
+  const teacher = teachers.get(cookies.tempId)
+  if (teacher) {
+    connection.send(JSON.stringify({ comment: 'you are a teacher' }))
+    
+    const classroom = indexTeacherToClassroom.get(teacher.id)
+    connection.on('message', (data, isBinary) => {
+      if (!isBinary) {
+        // TODO some logic parsing message
+        // const message = JSON.parse(data)
+        classroom.studentIds.forEach(studentId => {
+          const student = students.get(studentId)
+          student.connection.send(data)
+        })
+      }
+    })
+  }
+  else {
+    const student = students.get(cookies.tempId)
+    if (student) {
+      // allow teacher's message handler to echo messages to this student
+      // connection by storing it on the student object
+      student.connection = connection
+    }
+    else {
+      // unauthenticated user
+      connection.terminate()
+    }
+  }
+})
+
