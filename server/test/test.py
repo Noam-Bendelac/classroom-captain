@@ -9,7 +9,6 @@ class TestClassroomCaptain(unittest.TestCase):
     websocket_url = "ws://echo.websocket.events"
 
     def test_api_endpoint(self):
-        # TODO this will need some work after corresponding api is implemented
         api_url = f"{self.api_url}/test"
         session = requests.Session()
         cookies = session.cookies.get_dict()
