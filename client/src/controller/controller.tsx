@@ -142,6 +142,9 @@ export function ControllerProvider({
 }) {
   const store = useController(role)
   
+  window._store = store
+  window.Vector3 = Vector3
+  
   return <ControllerContext.Provider value={store}>
     { children }
   </ControllerContext.Provider>

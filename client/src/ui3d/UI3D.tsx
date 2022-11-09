@@ -56,7 +56,7 @@ function Scene({
     />
     
     <OrbitControlsDrei
-      // ref={controlsRef}
+      ref={controlsRef}
       onChange={() => {
         onCameraChange(camera.position)
       }}
