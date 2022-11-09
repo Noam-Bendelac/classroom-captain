@@ -29,7 +29,7 @@ const port = 1234;
 class Teacher {
   /** @type {string} */
   id = generateId()
-  /** @type {ws.WebSocket} */
+  /** @type {ws.WebSocket | null} */
   connection = null
   
   constructor() {
@@ -42,7 +42,7 @@ var teachers = new Map()
 class Student {
   /** @type {string} */
   id = generateId()
-  /** @type {ws.WebSocket} */
+  /** @type {ws.WebSocket | null} */
   connection = null
   
   constructor() {
@@ -77,9 +77,9 @@ var classrooms = new Map();
 
 
 // additional indexes for accessing records from ids
-/** @type {Map<string, Classroom>} */
+/** @type {Map<string, string>} */
 var indexTeacherToClassroom = new Map();
-/** @type {Map<string, Classroom>} */
+/** @type {Map<string, string>} */
 var indexStudentToClassroom = new Map();
 
 
@@ -105,7 +105,7 @@ app.post('/classrooms', (req,res)=>{
   const teacher = new Teacher()
   const classroom = new Classroom(teacher.id)
   
-  console.log(classrooms)
+  console.log(classroom)
   
   res.cookie('tempId', teacher.id, {
     maxAge: 1000 * 60 * 60 * 24 // expire after 24 hours
@@ -124,6 +124,8 @@ app.post("/classrooms/:classroomId/students", (req, res) => {
     
     const student = new Student()
     classroom.addStudent(student.id)
+    
+    console.log(classroom)
     
     res.cookie('tempId', student.id, {
       maxAge: 1000 * 60 * 60 * 24 // expire after 24 hours
@@ -146,21 +148,24 @@ const httpServer = app.listen(port, () => {
 const wsServer = new ws.WebSocketServer({ server: httpServer })
 
 wsServer.on('connection', (connection, req) => {
-  const cookies = cookie.parse(req.headers.cookie)
+  const cookies = cookie.parse(req.headers.cookie || '')
   console.log('connection', cookies)
   
   const teacher = teachers.get(cookies.tempId)
   if (teacher) {
     connection.send(JSON.stringify({ comment: 'you are a teacher' }))
     
-    const classroom = indexTeacherToClassroom.get(teacher.id)
+    const classroom = classrooms.get(indexTeacherToClassroom.get(teacher.id))
     connection.on('message', (data, isBinary) => {
       if (!isBinary) {
+        const text = data.toString()
         // TODO some logic parsing message
-        // const message = JSON.parse(data)
+        // const message = JSON.parse(text)
         classroom.studentIds.forEach(studentId => {
           const student = students.get(studentId)
-          student.connection.send(data)
+          if (student.connection) {
+            student.connection.send(text)
+          }
         })
       }
     })
@@ -168,6 +173,7 @@ wsServer.on('connection', (connection, req) => {
   else {
     const student = students.get(cookies.tempId)
     if (student) {
+      connection.send(JSON.stringify({ comment: 'you are a student' }))
       // allow teacher's message handler to echo messages to this student
       // connection by storing it on the student object
       student.connection = connection

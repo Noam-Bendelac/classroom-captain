@@ -8,7 +8,7 @@ import { subscribeWithSelector } from 'zustand/middleware'
 type StoreApi<S> = StoreMutators<StoreApiCore<S>, unknown>['zustand/subscribeWithSelector']
 
 const host = 'localhost'
-const backendPort = '4000'
+const backendPort = '1234'
 
 
 export type Role = 'teacher' | 'student' | 'neither'
@@ -90,7 +90,7 @@ function useController(role: Role) {
       onCameraChange: (position) => {
         if (get().role === 'teacher' && get().mode === 'captain') {
           // will possibly throttle here
-          ws.send(JSON.stringify({ camera: position }))
+          ws.send(JSON.stringify({ camera: position.toArray() }))
         }
       },
       
