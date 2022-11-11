@@ -5,8 +5,8 @@ import sys
 
 
 class TestClassroomCaptain(unittest.TestCase):
-    api_url = "https://www.google.com"
-    websocket_url = "ws://echo.websocket.events"
+    api_url = "http://localhost:1234"
+    websocket_url = "ws://localhost:1234"
 
     def test_api_endpoint(self):
         api_url = f"{self.api_url}/test"
@@ -58,7 +58,6 @@ class TestClassroomCaptain(unittest.TestCase):
         self.assertEqual(response.json(), expected_body)
 
     def test_websocket_functionality(self):
-        # TODO this will need some work after corresponding api is implemented
         classroom_code, teacher_session = self.classroom_create()
         student_api_url = f"{self.api_url}/classrooms/{classroom_code}/students"
         student_session = requests.Session()
@@ -66,11 +65,12 @@ class TestClassroomCaptain(unittest.TestCase):
         teacher_temp_id = teacher_session.cookies.get_dict()["tempId"]
         student_temp_id = student_session.cookies.get_dict()["tempId"]
         teacher_websocket = websocket.create_connection(
-            self.websocket_url, cookie=teacher_temp_id
+            self.websocket_url, cookie=f"tempId={teacher_temp_id}"
         )
         student_websocket = websocket.create_connection(
-            self.websocket_url, cookie=student_temp_id
+            self.websocket_url, cookie=f"tempId={student_temp_id}"
         )
+        _ = student_websocket.recv()
         teacher_send_message = "test message"
         teacher_websocket.send(teacher_send_message)
         student_recv_message = student_websocket.recv()
