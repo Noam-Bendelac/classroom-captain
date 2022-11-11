@@ -9,6 +9,7 @@ class TestClassroomCaptain(unittest.TestCase):
     websocket_url = "ws://localhost:1234"
 
     def test_api_endpoint(self):
+        # TODO Fix this when api endpoint is implemented
         api_url = f"{self.api_url}/test"
         session = requests.Session()
         cookies = session.cookies.get_dict()
