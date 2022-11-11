@@ -6,15 +6,16 @@ This directory contains code for testing the application.
 - https://pip.pypa.io/en/stable/installation/
 
 ## Install Dependencies
-Replace <path_to_project> with the path of the project.
+- Replace `<path_to_project>` with the path of the project.
 ```
 cd <path_to_project>/server/test
 pip install -r requirements.txt
 ```
 
 ## Run Tests
-Replace <path_to_project> with the path of the project and <URL> with the website's URL.
+- Edit following variables in test.py: `api_url` and `websocket_url`.
+- Replace `<path_to_project>` with the path of the project.
 ```
 cd <path_to_project>/server/test
-python -m unittest test.py <URL>
+python -m unittest test.py
 ```
