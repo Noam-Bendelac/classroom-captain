@@ -1,26 +1,11 @@
 import websocket
 import requests
 import unittest
-import sys
 
 
 class TestClassroomCaptain(unittest.TestCase):
     api_url = "http://localhost:1234"
     websocket_url = "ws://localhost:1234"
-
-    def test_api_endpoint(self):
-        # TODO Fix this when api endpoint is implemented
-        api_url = f"{self.api_url}/test"
-        session = requests.Session()
-        cookies = session.cookies.get_dict()
-        data = {"key": "value"}
-        response = requests.post(api_url, cookies=cookies, data=data)
-        self.assertEqual(response.status_code, requests.codes.ok)
-        expected_body = {"response": "value", "old_cookies": cookies}
-        self.assertEqual(response.json(), expected_body)
-        expected_cookies = {"my_id": "value"}
-        self.assertEqual(session.cookies.get_dict(), expected_cookies)
-        session.close()
 
     def classroom_create(self):
         api_url = f"{self.api_url}/classrooms"
@@ -65,6 +50,8 @@ class TestClassroomCaptain(unittest.TestCase):
         _ = student_session.post(student_api_url)
         teacher_temp_id = teacher_session.cookies.get_dict()["tempId"]
         student_temp_id = student_session.cookies.get_dict()["tempId"]
+        teacher_session.close()
+        student_session.close()
         teacher_websocket = websocket.create_connection(
             self.websocket_url, cookie=f"tempId={teacher_temp_id}"
         )
@@ -76,8 +63,6 @@ class TestClassroomCaptain(unittest.TestCase):
         teacher_websocket.send(teacher_send_message)
         student_recv_message = student_websocket.recv()
         self.assertEqual(student_recv_message, teacher_send_message)
-        teacher_session.close()
-        student_session.close()
         teacher_websocket.close()
         student_websocket.close()
 
