@@ -4,9 +4,17 @@ const ws = require('ws')
 
 
 const bodyParser = require("body-parser")
+
+const cors = require('cors')
   
 // Setting up the server
 var app = express()
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  // https://stackoverflow.com/questions/43772830/access-control-allow-credentials-header-in-the-response-is-which-must-be-t
+  credentials: true,
+}))
 
 app.set('views', __dirname + '/views');
 app.engine('html', require('ejs').renderFile);

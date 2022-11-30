@@ -22,7 +22,6 @@ type Mode = 'explorer' | 'captain'
 // this is unrelated to whether an action is available to the user to update state
 export interface Store {
   // important controlled states
-  role: Role,
   mode: Mode,
   
   // uncontrolled component will be pushed controlled state, but only when
@@ -77,18 +76,17 @@ function useController(role: Role) {
   const storePrivate: StoreApi<StorePrivate> = useMemo(() =>
     createStore<StorePrivate>()(
     subscribeWithSelector((set, get) => ({
-      role,
       mode: 'explorer',
       cameraPosition: null,
       
       setMode: (mode) => {
-        if (get().role === 'teacher') {
+        if (role === 'teacher') {
           set({ mode })
           ws.send(JSON.stringify({ mode }))
         }
       },
       onCameraChange: (position) => {
-        if (get().role === 'teacher' && get().mode === 'captain') {
+        if (role === 'teacher' && get().mode === 'captain') {
           // will possibly throttle here
           ws.send(JSON.stringify({ camera: position.toArray() }))
         }
