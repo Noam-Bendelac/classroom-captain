@@ -7,8 +7,6 @@ import { Sidebar } from 'ui2d/Sidebar';
 import { Role, ControllerProvider } from 'controller/controller';
 
 
-const backend = 'localhost:1234'
-
 
 declare global {
   interface Window {
@@ -31,7 +29,7 @@ function App() {
         <HomePage setRole={setRole} setClassroomCode={setClassroomCode} />
       </Route>
       <Route path="/app">
-        <DiagramPage role={role} />
+        <DiagramPage role={role} classroomCode={classroomCode} />
       </Route>
       <Route>
         <div>404</div>
@@ -59,7 +57,7 @@ function HomePage({
   
   const { push } = useHistory()
   const teacher = async () => {
-    const resp = await fetch(`http://${backend}/classrooms`, {
+    const resp = await fetch(`https://${process.env.REACT_APP_BACKEND_HOSTPORT}/classrooms`, {
       method: 'POST',
       credentials: 'include',
     }).then(r => r.json()) as { classroomCode: string }
@@ -68,7 +66,7 @@ function HomePage({
     push('/app')
   }
   const student = async () => {
-    const resp = await fetch(`http://${backend}/classrooms/${localClassroomCode}/students`, {
+    const resp = await fetch(`https://${process.env.REACT_APP_BACKEND_HOSTPORT}/classrooms/${localClassroomCode}/students`, {
       method: 'POST',
       credentials: 'include',
     })
@@ -78,26 +76,32 @@ function HomePage({
     }
   }
   return <div>
-    <a href="#_" onClick={(e) => {
-      e.preventDefault()
-      teacher()
-    }}>Teacher</a>
-    <a href="#_" onClick={(e) => {
-      e.preventDefault()
-      student()
-    }}>Student</a>
-    <input type="text" name="code" id="code"
-      value={localClassroomCode}
-      onChange={(e) => setLocalClassroomCode(e.target.value)}
-    />
+    <p>
+      <a href="#_" onClick={(e) => {
+        e.preventDefault()
+        teacher()
+      }}>Teacher</a>
+    </p>
+    <p>
+      <a href="#_" onClick={(e) => {
+        e.preventDefault()
+        student()
+      }}>Student</a>
+      <input type="text" name="code" id="code"
+        value={localClassroomCode}
+        onChange={(e) => setLocalClassroomCode(e.target.value)}
+      />
+    </p>
   </div>
 }
 
 
 function DiagramPage({
   role,
+  classroomCode,
 }: {
   role: Role,
+  classroomCode: string | null,
 }) {
   
   const canvasPanelRef = useRef<HTMLDivElement>(null)
@@ -105,7 +109,7 @@ function DiagramPage({
   return (
     <ControllerProvider role={role}>
       <div className={styles.app}>
-        <Header className={styles.header} />
+        <Header className={styles.header} classroomCode={classroomCode} />
         <div className={styles.mainContent}>
           <Sidebar className={styles.sidebar} />
           <div ref={canvasPanelRef} className={styles.canvasPanel}>

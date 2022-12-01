@@ -10,8 +10,10 @@ import shallow from 'zustand/shallow'
 
 export function Header({
   className,
+  classroomCode,
 }: {
   className: string,
+  classroomCode: string | null,
 }) {
   const store = useContext(ControllerContext)
   const { mode, setMode } = useStore(store,
@@ -29,10 +31,10 @@ export function Header({
       </div>
     </div>
     <div className={styles.right}>
-        <div className={styles.classCodeContainer}>
+        { classroomCode && <div className={styles.classCodeContainer}>
           <p className={styles.classCodeLabel}>Class Code</p>
-          <h2 className={styles.classCode}>ABC123</h2>
-        </div>
+          <h2 className={styles.classCode}>{classroomCode}</h2>
+        </div> }
 
         <div className={styles.studentsContainer}>
           <p className={styles.students}>23</p>

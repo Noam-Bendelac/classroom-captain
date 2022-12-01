@@ -98,6 +98,7 @@ function generateId() {
 
 // views for debugging
 app.get("/", (req, res) => {
+  console.log('GET / HTTP')
   res.render('index.html');
 });
 
@@ -116,8 +117,16 @@ app.post('/classrooms', (req,res)=>{
   console.log(classroom)
   
   res.cookie('tempId', teacher.id, {
+    sameSite: 'none',
+    secure: true,
+    // domain: 'ae98-2607-b400-24-0-c83a-b14c-e843-c95a.ngrok.io',
     maxAge: 1000 * 60 * 60 * 24 // expire after 24 hours
   })
+  // res.cookie('tempId', teacher.id, {
+  //   sameSite: 'none',
+  //   domain: 'localhost',
+  //   maxAge: 1000 * 60 * 60 * 24 // expire after 24 hours
+  // })
   
   res.status(201).json({ classroomCode: classroom.id })
 })
@@ -136,6 +145,7 @@ app.post("/classrooms/:classroomId/students", (req, res) => {
     console.log(classroom)
     
     res.cookie('tempId', student.id, {
+      sameSite: false,
       maxAge: 1000 * 60 * 60 * 24 // expire after 24 hours
     })
     

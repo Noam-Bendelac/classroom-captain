@@ -7,8 +7,6 @@ import { subscribeWithSelector } from 'zustand/middleware'
 // this is what we have to do to get access to the type of the API created by subscribeWithSelector
 type StoreApi<S> = StoreMutators<StoreApiCore<S>, unknown>['zustand/subscribeWithSelector']
 
-const host = 'localhost'
-const backendPort = '1234'
 
 
 export type Role = 'teacher' | 'student' | 'neither'
@@ -61,12 +59,17 @@ interface StorePrivate extends Store {
 //     mode: 'explorer'
 //   }
 
+let numUpdates = 0
 
 function useController(role: Role) {
   
   
   const ws = useMemo(() => {
-    const ws = new WebSocket(`ws://${host}:${backendPort}/`)
+    const ws = new WebSocket(`wss://${process.env.REACT_APP_BACKEND_HOSTPORT}/`)
+    
+    numUpdates++
+    console.log(numUpdates)
+    console.log(ws)
     
     ws.addEventListener('error', evt => console.log('ws error!', evt))
     return ws

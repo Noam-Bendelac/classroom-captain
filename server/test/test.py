@@ -6,6 +6,8 @@ import unittest
 class TestClassroomCaptain(unittest.TestCase):
     api_url = "http://localhost:1234"
     websocket_url = "ws://localhost:1234"
+    api_url = "http://....ngrok.io"
+    websocket_url = "wss://....ngrok.io"
 
     def classroom_create(self):
         api_url = f"{self.api_url}/classrooms"
