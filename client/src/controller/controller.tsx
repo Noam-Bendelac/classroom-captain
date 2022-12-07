@@ -7,8 +7,6 @@ import { subscribeWithSelector } from 'zustand/middleware'
 // this is what we have to do to get access to the type of the API created by subscribeWithSelector
 type StoreApi<S> = StoreMutators<StoreApiCore<S>, unknown>['zustand/subscribeWithSelector']
 
-const host = 'localhost'
-const backendPort = '1234'
 
 
 export type Role = 'teacher' | 'student' | 'neither'
@@ -22,7 +20,6 @@ type Mode = 'explorer' | 'captain'
 // this is unrelated to whether an action is available to the user to update state
 export interface Store {
   // important controlled states
-  role: Role,
   mode: Mode,
   
   // uncontrolled component will be pushed controlled state, but only when
@@ -67,7 +64,7 @@ function useController(role: Role) {
   
   
   const ws = useMemo(() => {
-    const ws = new WebSocket(`ws://${host}:${backendPort}/`)
+    const ws = new WebSocket(`ws://${process.env.REACT_APP_BACKEND_HOSTPORT}/`)
     
     ws.addEventListener('error', evt => console.log('ws error!', evt))
     return ws
@@ -77,18 +74,17 @@ function useController(role: Role) {
   const storePrivate: StoreApi<StorePrivate> = useMemo(() =>
     createStore<StorePrivate>()(
     subscribeWithSelector((set, get) => ({
-      role,
       mode: 'explorer',
       cameraPosition: null,
       
       setMode: (mode) => {
-        if (get().role === 'teacher') {
+        if (role === 'teacher') {
           set({ mode })
           ws.send(JSON.stringify({ mode }))
         }
       },
       onCameraChange: (position) => {
-        if (get().role === 'teacher' && get().mode === 'captain') {
+        if (role === 'teacher' && get().mode === 'captain') {
           // will possibly throttle here
           ws.send(JSON.stringify({ camera: position.toArray() }))
         }

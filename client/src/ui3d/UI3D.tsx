@@ -60,6 +60,7 @@ function Scene({
       onChange={() => {
         onCameraChange(camera.position)
       }}
+      enableDamping={false}
     />
     
     <Environment files={'/assets/belfast_sunset_puresky_1k.hdr'} />
