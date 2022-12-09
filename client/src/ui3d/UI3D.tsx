@@ -12,23 +12,19 @@ import { useMemoCleanup } from '../util'
 
 export function UI3D({
   parentRef,
-  func,
 }: {
   parentRef: React.RefObject<HTMLDivElement>,
-  func: BoxedExpression,
 }) {
   return <Canvas>
-    <Scene parentRef={parentRef} func={func} />
+    <Scene parentRef={parentRef} />
   </Canvas>
 }
 
 
 function Scene({
   parentRef,
-  func,
 }: {
   parentRef: React.RefObject<HTMLDivElement>,
-  func: BoxedExpression,
 }) {
   const controlsRef = useRef<OrbitControls>(null)
   
@@ -46,11 +42,13 @@ function Scene({
   
   const onCameraChange = useStore(store, ({ onCameraChange }) => onCameraChange)
   
+  const topic = useStore(store, ({ topic }) => topic)
+  
   const camera = useThree(({ camera }) => camera)
   
   useProperResize(parentRef)
   
-  return <>
+  return <group rotation={topic === 'multivar' ? [0, Math.PI, 0] : [0,0,0]}>
     <axesHelper />
     
     <OrthographicCamera
@@ -58,7 +56,7 @@ function Scene({
       // left={-5} right={5}
       // top={50} bottom={-50}
       zoom={50}
-      position={[3,3,3]}
+      position={[20,20,20]}
     />
     
     <OrbitControlsDrei
@@ -72,40 +70,46 @@ function Scene({
     <Environment files={'/assets/belfast_sunset_puresky_1k.hdr'} />
     
     {/* <SceneContents /> */}
-    <MultivarScene func={func} />
-  </>
+    <MultivarScene />
+  </group>
   
 }
 
 
 export const CE = new ComputeEngine()
 
-function MultivarScene({ func }: { func: BoxedExpression }) {
+function MultivarScene({  }: {  }) {
   return <>
-    <FunctionSurface func={func} />
+    <FunctionSurface />
   </>
 }
 
-function FunctionSurface({ func }: { func: BoxedExpression }) {
-  // let func = useCallback((x: number, y: number) => Math.sin(x) * Math.cos(y), [])
-  // let func = useCallback((x: number, y: number) => -0.1 * (x**2 + y**2), [])
+function FunctionSurface({  }: {  }) {
   
   const geometry = useMemoCleanup(
     useCallback(() => new PlaneGeometry(10, 10, 30, 30), []),
     useCallback((geometry) => geometry.dispose(), []),
   )
   
-  useEffect(() => {
-    // here we treat z like up
-    const position = geometry.getAttribute('position')
-    for (let i = 0; i < position.count; i++) {
-      CE.set({ x: position.getX(i), y: position.getY(i) })
-      const z = func.ops?.[1]?.N().valueOf() as number
-      position.setZ(i, z)
-    }
-    position.needsUpdate = true
-    geometry.computeVertexNormals()
-  }, [geometry, func])
+  const store = useContext(ControllerContext)
+  useEffect(() => store.subscribe(
+    (store) => store.topic === 'multivar' ? store.func : null,
+    func => {
+      if (func === null) return;
+      // here we treat z like up
+      const position = geometry.getAttribute('position')
+      for (let i = 0; i < position.count; i++) {
+        CE.set({ x: position.getX(i), y: position.getY(i) })
+        const z = func.N().valueOf() as number
+        if (!Number.isFinite(z)) break;
+        // console.log(z)
+        position.setZ(i, z)
+      }
+      position.needsUpdate = true
+      geometry.computeVertexNormals()
+    },
+    { fireImmediately: true }
+  ))
   
   // by default, plane normal is towards z; here we make z up
   return <mesh geometry={geometry} rotation={[-Math.PI/2, 0, -Math.PI/2]}>

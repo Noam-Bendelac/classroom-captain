@@ -1,12 +1,13 @@
-import React, { Dispatch, PropsWithChildren, useDebugValue, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Dispatch, HTMLAttributes, PropsWithChildren, useContext, useDebugValue, useEffect, useMemo, useRef, useState } from 'react';
 import { BrowserRouter as Router, Switch, Route, useHistory } from "react-router-dom"
 import styles from './App.module.css';
 import { CE, UI3D } from 'ui3d/UI3D'
 import { Header } from 'ui2d/Header';
 import { Sidebar } from 'ui2d/Sidebar';
-import { Role, ControllerProvider } from 'controller/controller';
+import { Role, ControllerProvider, ControllerContext } from 'controller/controller';
 import { MathfieldElement, MathfieldElementAttributes } from 'mathlive'
-import { BoxedExpression, ComputeEngine } from '@cortex-js/compute-engine'
+// import { BoxedExpression, ComputeEngine } from '@cortex-js/compute-engine'
+import { useStore } from 'zustand';
 
 // const CE = new ComputeEngine()
 
@@ -21,12 +22,15 @@ declare global {
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      ['math-field']: PropsWithChildren<Partial<MathfieldElementAttributes> & {
-        // onChange?: () => void,
-        // onInput?: () => void,
-        ref?: React.Ref<MathfieldElement>,
-        key?: React.Key,
-      }>;
+      ['math-field']: PropsWithChildren<Partial<
+        MathfieldElementAttributes &
+        HTMLAttributes<HTMLElement> & {
+          // onChange?: () => void,
+          // onInput?: () => void,
+          ref?: React.Ref<MathfieldElement>,
+          key?: React.Key,
+        }
+      >>;
     }
   }
 }
@@ -121,7 +125,36 @@ function DiagramPage({
   
   const canvasPanelRef = useRef<HTMLDivElement>(null)
   
-  const [math, setMath] = useState<BoxedExpression>(CE.parse('f(x,y)=0.1(x^2+y^2)'))
+  return (
+    <ControllerProvider role={role}>
+      <div className={styles.app}>
+        <Header className={styles.header} classroomCode={classroomCode} />
+        <div className={styles.mainContent}>
+          <Sidebar className={styles.sidebar} />
+          <div ref={canvasPanelRef} className={styles.canvasPanel}>
+            <UI3D parentRef={canvasPanelRef} />
+            {/* possibly more ui on top of canvas */}
+            <RightPanel />
+          </div>
+        </div>
+      </div>
+    </ControllerProvider>
+  );
+}
+
+function RightPanel() {
+  // const [math, setMath] = useState<BoxedExpression>(CE.parse('f(x,y)=0.1(x^2+y^2)'))
+  const store = useContext(ControllerContext)
+  const setFunc = useStore(store, (store) => store.topic === 'multivar' ? store.setFunc : null)
+  // const func = useStore(store, (store) => store.topic === 'multivar' ? store.func : null)
+  useEffect(() => store.subscribe(
+    (store) => store.topic === 'multivar' ? store.func : null,
+    func => {
+      if (func === null) return;
+      // TODO if student and captain mode
+    }
+  ))
+  
   const mathField = useRef<MathfieldElement>(null)
   
   console.log('rerender')
@@ -132,47 +165,35 @@ function DiagramPage({
   
   useEffect(() => {
     // setTimeout(() => {
-      const field = mathField.current
-      console.log(field)
-      // field?.setValue('f(x,y)=x+y')
-      const handler = () => {
-        const val = field?.value
-        const expr = CE.parse(val!)
-        console.log(expr);
-        // console.log(expr.N().valueOf());
-        // console.log({json})
-        setMath(expr)
-      }
-      handler()
-      field?.addEventListener('input', handler)
+    const field = mathField.current
+    console.log(field)
+    const handler = () => {
+      const val = field?.value
+      const expr = CE.parse(val!)
+      console.log(expr);
+      // console.log(expr.N().valueOf());
+      // console.log({json})
+      setFunc?.(expr)
+    }
+    handler()
+    field?.addEventListener('input', handler)
     // }, 1000)
     
-    // return field?.removeEventListener('input', handler)
-  }, [mathField])
+    return () => field?.removeEventListener('input', handler)
+  }, [mathField, setFunc])
   
-  return (
-    <ControllerProvider role={role}>
-      <div className={styles.app}>
-        <Header className={styles.header} classroomCode={classroomCode} />
-        <div className={styles.mainContent}>
-          <Sidebar className={styles.sidebar} />
-          <div ref={canvasPanelRef} className={styles.canvasPanel}>
-            <UI3D parentRef={canvasPanelRef} func={math} />
-            {/* possibly more ui on top of canvas */}
-            <div className={styles.canvasBox}>
-              <math-field ref={mathField}
-                virtual-keyboard-mode={'off'}
-                // read-only
-              >
-                {/* {"f(x,y)=\\placeholder[rhs]{0.1*(x^2+y^2)}"} */}
-                {"f(x,y)=0.1(x^2+y^2)"}
-              </math-field>
-            </div>
-          </div>
-        </div>
-      </div>
-    </ControllerProvider>
-  );
+  return <div className={styles.canvasBox}>
+    <math-field read-only class={styles.math}>{"f(x,y)="}</math-field>
+    <math-field ref={mathField}
+      class={styles.math}
+      virtual-keyboard-mode={'off'}
+      // read-only
+    >
+      {/* {"f(x,y)=\\placeholder[rhs]{0.1*(x^2+y^2)}"} */}
+      {"0.1(x^2+y^2)"}
+      {/* {func?.latex} */}
+    </math-field>
+  </div>
 }
 
 export default App;

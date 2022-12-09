@@ -167,6 +167,7 @@ wsServer.on('connection', (connection, req) => {
     connection.on('message', (data, isBinary) => {
       if (!isBinary) {
         const text = data.toString()
+        console.log(text)
         // TODO some logic parsing message
         // const message = JSON.parse(text)
         classroom.studentIds.forEach(studentId => {
