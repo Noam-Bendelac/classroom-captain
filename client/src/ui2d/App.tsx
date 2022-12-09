@@ -7,6 +7,7 @@ import { Sidebar } from 'ui2d/Sidebar';
 import { Role, ControllerProvider, ControllerContext } from 'controller/controller';
 import { RightSideBar } from 'ui2d/RightSideBar';
 import { useStore } from 'zustand';
+import { ApiDemoPage } from 'ui2d/ApiDemoPage';
 
 
 declare global {
@@ -28,19 +29,26 @@ function App() {
   window._setRole = setRole
   
   return <roleContext.Provider value={role}>
-    <Router>
-      <Switch>
-        <Route exact path="/">
-          <HomePage setRole={setRole} setClassroomCode={setClassroomCode} />
-        </Route>
-        <Route path="/app">
-          <DiagramPage classroomCode={classroomCode} />
-        </Route>
-        <Route>
-          <div>404</div>
-        </Route>
-      </Switch>
-    </Router>
+    { process.env.REACT_APP_DEMO
+    ? <Router>
+        <Switch>
+          <Route exact path="/">
+            <HomePage setRole={setRole} setClassroomCode={setClassroomCode} />
+          </Route>
+          <Route path="/api">
+            <ApiDemoPage />
+          </Route>
+          <Route path="/app">
+            <DiagramPage classroomCode={classroomCode} />
+          </Route>
+          <Route>
+            <div>404</div>
+          </Route>
+        </Switch>
+      </Router>
+    : <DiagramPage classroomCode={classroomCode} />
+    }
+    
   </roleContext.Provider>
 }
 
