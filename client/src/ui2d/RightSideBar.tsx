@@ -211,7 +211,7 @@ function SlidersBox() {
           }}
         />
       </div>
-      <math-field ref={xFunctionRef} read-only></math-field>
+      <math-field class={styles.math} ref={xFunctionRef} read-only></math-field>
     </div>
     <div className={styles.sliderItem}>
       <div className={styles.sliderRow}>
@@ -226,7 +226,7 @@ function SlidersBox() {
           }}
         />
       </div>
-      <math-field ref={yFunctionRef} read-only></math-field>
+      <math-field class={styles.math} ref={yFunctionRef} read-only></math-field>
     </div>
   </div>
 }

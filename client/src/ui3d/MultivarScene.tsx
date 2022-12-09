@@ -1,7 +1,8 @@
 import { ComputeEngine } from '@cortex-js/compute-engine'
+import { Line } from '@react-three/drei'
 import { ControllerContext } from 'controller/controller'
 import { useCallback, useContext, useEffect, useRef } from 'react'
-import { Color, DoubleSide, Group, PlaneGeometry } from 'three'
+import { Color, ColorRepresentation, DoubleSide, Group, PlaneGeometry } from 'three'
 import shallow from 'zustand/shallow'
 import { useMemoCleanup } from '../util'
 
@@ -18,6 +19,9 @@ export function MultivarScene({  }: {  }) {
     <FunctionSurface />
     <IntersectionCurve dir={'x'} />
     <IntersectionCurve dir={'y'} />
+    <Axis axis={'x'} color={new Color().setHSL(8/360, 0.8, 0.6)} />
+    <Axis axis={'y'} color={new Color().setHSL(128/360, 0.8, 0.6)} />
+    <Axis axis={'z'} color={new Color().setHSL(248/360, 0.8, 0.6)} />
   </group>
 }
 
@@ -153,5 +157,27 @@ function IntersectionCurve({ dir, }: { dir: 'x' | 'y' }) {
       />
     </mesh>)}
   </group>
+}
+
+
+function Axis({
+  axis,
+  color,
+}: {
+  axis: 'x' | 'y' | 'z',
+  color: ColorRepresentation,
+}) {
+  const length = 10
+  return <Line
+    points={[
+      [0,0,0],
+      axis === 'x' ? [length, 0, 0]
+      : axis === 'y' ? [0, length, 0]
+      : [0, 0, length],
+    ]}
+    lineWidth={0.15}
+    worldUnits
+    color={color}
+  />
 }
 
