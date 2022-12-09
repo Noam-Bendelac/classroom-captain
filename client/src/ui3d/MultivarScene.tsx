@@ -84,7 +84,6 @@ function IntersectionCurve({ dir, }: { dir: 'x' | 'y' }) {
       // here we are in z-up
       
       // position y at constant if dir is x; position x at constant if dir is y
-      // groupRef.current?.position.setScalar(0).setComponent(dir === 'x' ? 1 : 0, constant)
       if (dir === 'x') {
         groupRef.current?.position.set(0, constant, 0)
         groupRef.current?.scale.set(1, 1, 1)
@@ -94,7 +93,6 @@ function IntersectionCurve({ dir, }: { dir: 'x' | 'y' }) {
         groupRef.current?.scale.set(1, -1, 1)
         groupRef.current?.rotation.set(0, 0, Math.PI/2)
       }
-      console.log(dir === 'x' ? 1 : 0, constant, groupRef.current?.position)
       
       // here we treat z like up, position.x is always the progress along the line,
       // and position.y is always the slider constant
@@ -149,8 +147,6 @@ function IntersectionCurve({ dir, }: { dir: 'x' | 'y' }) {
     { geometries.map((geometry, index) => <mesh geometry={geometry} key={index}>
       <meshStandardMaterial
         color={new Color().setHSL(200/360, 0.85, 0.65).convertSRGBToLinear()}
-        // opacity={0.8}
-        // transparent
         roughness={0.3}
         metalness={1}
         side={DoubleSide}

@@ -1,5 +1,5 @@
 import { ControllerContext } from 'controller/controller'
-import { HTMLAttributes, PropsWithChildren, useContext, useDebugValue, useEffect, useRef } from 'react'
+import { HTMLAttributes, PropsWithChildren, useContext, useDebugValue, useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { MathfieldElement, MathfieldElementAttributes } from 'mathlive'
 import { CE } from 'ui3d/MultivarScene';
@@ -42,7 +42,19 @@ export function RightSideBar({
 }
 
 
+const functions = [
+  '0.2(x^2+y^2)',
+  '\\cos(x)\\cos(y)',
+  '-0.2(x^2+y^2)',
+  'x',
+  '\\cos(x)\\sin(y)',
+  '0.2y^2',
+]
+
+
+
 function FunctionBox() {
+  const [funcIndex, setFuncIndex] = useState(0)
   const store = useContext(ControllerContext)
   const setFunc = useStore(store, (store) => store.topic === 'multivar' ? store.setFunc : null)
   useEffect(() => store.subscribe(
@@ -55,8 +67,6 @@ function FunctionBox() {
   
   const mathField = useRef<MathfieldElement>(null)
   
-  console.log('rerender')
-  
   // due to weirdness in mathlive's typescript/npm package setup, we must reference
   // the *class* not just the *type* in our code for the library to work
   useDebugValue(MathfieldElement)
@@ -68,7 +78,7 @@ function FunctionBox() {
     const handler = () => {
       const val = field?.value
       const expr = CE.parse(val!)
-      console.log(expr);
+      // console.log(expr);
       // console.log(expr.N().valueOf());
       // console.log({json})
       setFunc?.(expr)
@@ -92,12 +102,21 @@ function FunctionBox() {
           class={classNames(styles.math, styles.inputMath)}
           virtual-keyboard-mode={'off'}
           >
-          {"0.1(x^2+y^2)"}
+          {functions[0]}
         </math-field>
       {/* </div> */}
     </div>
-    <p>Type a function or
+    <p>Type a function or{' '}
       <button
+        onClick={() => {
+          const newLatex = functions[(funcIndex + 1) % functions.length]
+          setFunc?.(CE.parse(newLatex))
+          setFuncIndex(i => i + 1)
+          // TODO is this right
+          if (mathField.current) {
+            mathField.current.value = newLatex
+          }
+        }}
         className={styles.functionButton}
       >try another one</button>
     </p>
@@ -107,8 +126,12 @@ function FunctionBox() {
 
 function SlidersBox() {
   
-  const xRef = useRef<HTMLInputElement>(null)
-  const yRef = useRef<HTMLInputElement>(null)
+  const xSliderRef = useRef<HTMLInputElement>(null)
+  const ySliderRef = useRef<HTMLInputElement>(null)
+  const xMathRef = useRef<MathfieldElement>(null)
+  const yMathRef = useRef<MathfieldElement>(null)
+  const xFunctionRef = useRef<MathfieldElement>(null)
+  const yFunctionRef = useRef<MathfieldElement>(null)
   
   const store = useContext(ControllerContext)
   const role = useContext(roleContext)
@@ -120,8 +143,11 @@ function SlidersBox() {
     (store) => store.topic === 'multivar' ? store.x : null,
     x => {
       if (x === null) return;
-      if (xRef.current) {
-        xRef.current.valueAsNumber = x
+      if (xSliderRef.current) {
+        xSliderRef.current.valueAsNumber = x
+      }
+      if (xMathRef.current) {
+        xMathRef.current.value = `x_1=${x}`
       }
     }
   ), [store])
@@ -129,8 +155,40 @@ function SlidersBox() {
     (store) => store.topic === 'multivar' ? store.y : null,
     y => {
       if (y === null) return;
-      if (yRef.current) {
-        yRef.current.valueAsNumber = y
+      if (ySliderRef.current) {
+        ySliderRef.current.valueAsNumber = y
+      }
+      if (yMathRef.current) {
+        yMathRef.current.value = `y_1=${y}`
+      }
+    }
+  ), [store])
+  
+  useEffect(() => store.subscribe(
+    (store) => store.topic === 'multivar' ? [store.x, store.func] as const : null,
+    (state) => {
+      if (state === null) return;
+      const [x, func] = state
+      if (xFunctionRef.current) {
+        CE.set({ x, y: null })
+        CE.latexOptions.precision = 3
+        CE.latexOptions.truncationMarker = ''
+        const expr = func.evaluate()
+        xFunctionRef.current.expression = CE.box(['Equal', ['f', CE.parse('x_1'), 'y'], expr])
+      }
+    }
+  ), [store])
+  useEffect(() => store.subscribe(
+    (store) => store.topic === 'multivar' ? [store.y, store.func] as const : null,
+    (state) => {
+      if (state === null) return;
+      const [y, func] = state
+      if (yFunctionRef.current) {
+        CE.set({ x: null, y })
+        CE.latexOptions.precision = 3
+        CE.latexOptions.truncationMarker = ''
+        const expr = func.evaluate()
+        yFunctionRef.current.expression = CE.box(['Equal', ['f', 'x', CE.parse('y_1')], expr])
       }
     }
   ), [store])
@@ -142,9 +200,9 @@ function SlidersBox() {
     </div>
     <div className={styles.sliderItem}>
       <div className={styles.sliderRow}>
-        <math-field read-only class={styles.math}>{'x_1=0'}</math-field>
+        <math-field ref={xMathRef} read-only class={classNames(styles.math, styles.sliderLabel)}>{'x_1=0'}</math-field>
         <input
-          ref={xRef}
+          ref={xSliderRef}
           className={styles.slider}
           type={'range'} defaultValue={0} min={-5} max={5} step={0.1}
           disabled={role === 'student' && mode === 'captain'}
@@ -153,12 +211,13 @@ function SlidersBox() {
           }}
         />
       </div>
+      <math-field ref={xFunctionRef} read-only></math-field>
     </div>
     <div className={styles.sliderItem}>
       <div className={styles.sliderRow}>
-        <math-field read-only class={styles.math}>{'y_1=0'}</math-field>
+        <math-field ref={yMathRef} read-only class={classNames(styles.math, styles.sliderLabel)}>{'y_1=0'}</math-field>
         <input
-          ref={yRef}
+          ref={ySliderRef}
           className={styles.slider}
           type={'range'} defaultValue={0} min={-5} max={5} step={0.1}
           disabled={role === 'student' && mode === 'captain'}
@@ -167,6 +226,7 @@ function SlidersBox() {
           }}
         />
       </div>
+      <math-field ref={yFunctionRef} read-only></math-field>
     </div>
   </div>
 }
