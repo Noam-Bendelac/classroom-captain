@@ -165,7 +165,7 @@ function useController() {
         }
       },
       onCameraChange: (position) => {
-        if (role === 'teacher' && get().mode === 'captain') {
+        if (role === 'teacher') {
           // will possibly throttle here
           ws.send(JSON.stringify({ camera: position.toArray() }))
         }
@@ -181,13 +181,24 @@ function useController() {
     ws.addEventListener('message', (evt: MessageEvent<string>) => {
       console.log('message!', evt)
       if (role === 'student') {
-        const message: Record<string, string | number[]> = JSON.parse(evt.data)
+        const message: Record<string, string | number | number[]> = JSON.parse(evt.data)
         if (message.mode && (message.mode === 'explorer' || message.mode === 'captain')) {
           storePrivate.getState()._set({ mode: message.mode })
         }
-        if (message.camera && message.camera.length) {
-          const [x, y, z] = message.camera as number[]
-          storePrivate.getState()._set({ cameraPosition: new Vector3(x, y, z) })
+        if (storePrivate.getState().mode === 'captain') {
+          if (message.camera && Array.isArray(message.camera)) {
+            const [x, y, z] = message.camera
+            storePrivate.getState()._set({ cameraPosition: new Vector3(x, y, z) })
+          }
+          if (message.func && typeof message.func === 'string') {
+            storePrivate.getState()._set({ func: CE.parse(message.func) })
+          }
+          if (message.x && Number.isFinite(message.x)) {
+            storePrivate.getState()._set({ x: message.x as number })
+          }
+          if (message.y && Number.isFinite(message.y)) {
+            storePrivate.getState()._set({ y: message.y as number })
+          }
         }
       }
     })

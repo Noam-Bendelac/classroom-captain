@@ -91,6 +91,7 @@
   padding: 5px;
   display: flex;
   align-items: stretch;
+  box-sizing: border-box;
   
   /* big number to guarantee enough */
   border-radius: 100px;
@@ -129,6 +130,7 @@
   position: absolute;
   transition: left, background-color;
   transition-duration: 0.4s;
+  transition-delay: 0.15s;
   left: 0;
   top: 0;
   bottom: 0;

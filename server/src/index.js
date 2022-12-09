@@ -70,6 +70,17 @@ class Classroom {
   /** @type {string[]} */
   studentIds = []
   
+  /** @type {'explorer' | 'captain'} */
+  mode = 'explorer'
+  /** @type {[number, number, number]} */
+  camera = [1,1,1]
+  /** @type {string} */
+  func = '0.2(x^2+y^2)'
+  /** @type {number} */
+  x = 0
+  /** @type {number} */
+  y = 0
+  
   constructor(teacherId) {
     this.teacherId = teacherId
     classrooms.set(this.id, this)
@@ -151,6 +162,19 @@ const httpServer = app.listen(port, () => {
 });
 
 
+
+function tryExpr(block) {
+  let ret = null
+  try {
+    ret = block()
+  }
+  catch {
+    // no op
+  }
+  return ret
+}
+
+
 // websocket api
 
 const wsServer = new ws.WebSocketServer({ server: httpServer })
@@ -164,18 +188,55 @@ wsServer.on('connection', (connection, req) => {
     connection.send(JSON.stringify({ comment: 'you are a teacher' }))
     
     const classroom = classrooms.get(indexTeacherToClassroom.get(teacher.id))
+    const echoMessage = (sendText) => {
+      classroom.studentIds.forEach(studentId => {
+        const student = students.get(studentId)
+        if (student.connection) {
+          student.connection.send(sendText)
+        }
+      })
+    }
     connection.on('message', (data, isBinary) => {
       if (!isBinary) {
         const text = data.toString()
         console.log(text)
-        // TODO some logic parsing message
-        // const message = JSON.parse(text)
-        classroom.studentIds.forEach(studentId => {
-          const student = students.get(studentId)
-          if (student.connection) {
-            student.connection.send(text)
+        /** @type Record<string, any> | null */
+        const message = tryExpr(() => JSON.parse(text))
+        
+        if (message.mode && (message.mode === 'captain' || message.mode === 'explorer')) {
+          classroom.mode = message.mode
+          // send entire current state of classroom
+          if (classroom.mode === 'captain') {
+            echoMessage(JSON.stringify({
+              mode: classroom.mode,
+              // topic
+              camera: classroom.camera,
+              func: classroom.func,
+              x: classroom.x,
+              y: classroom.y,
+            }))
           }
-        })
+        } else if (message.camera) {
+          classroom.camera = message.camera
+          if (classroom.mode === 'captain') {
+            echoMessage(text)
+          }
+        } else if (message.func) {
+          classroom.func = message.func
+          if (classroom.mode === 'captain') {
+            echoMessage(text)
+          }
+        } else if (message.x) {
+          classroom.x = message.x
+          if (classroom.mode === 'captain') {
+            echoMessage(text)
+          }
+        } else if (message.y) {
+          classroom.y = message.y
+          if (classroom.mode === 'captain') {
+            echoMessage(text)
+          }
+        }
       }
     })
   }

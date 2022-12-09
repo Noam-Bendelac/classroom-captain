@@ -55,17 +55,27 @@ const functions = [
 
 function FunctionBox() {
   const [funcIndex, setFuncIndex] = useState(0)
+  
+  const role = useContext(roleContext)
+  
   const store = useContext(ControllerContext)
   const setFunc = useStore(store, (store) => store.topic === 'multivar' ? store.setFunc : null)
+  const mode = useStore(store, ({ mode }) => mode)
+  
+  const mathField = useRef<MathfieldElement>(null)
+  
   useEffect(() => store.subscribe(
     (store) => store.topic === 'multivar' ? store.func : null,
     func => {
       if (func === null) return;
-      // TODO if student and captain mode
+      // only a controlled component if student and captain; otherwise uncontrolled
+      if (role === 'student' && mode === 'captain') {
+        if (mathField.current) {
+          mathField.current.expression = func
+        }
+      }
     }
-  ), [store])
-  
-  const mathField = useRef<MathfieldElement>(null)
+  ), [store, mode, role])
   
   // due to weirdness in mathlive's typescript/npm package setup, we must reference
   // the *class* not just the *type* in our code for the library to work
