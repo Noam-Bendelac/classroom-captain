@@ -61,6 +61,11 @@
   font: var(--paytone-one-70);
   margin-right: -3px;
 }
+.classCodeStudent {
+  font: var(--paytone-one-70);
+  margin-right: -3px;
+  font-size: 38px;
+}
 
 .studentsContainer {
   width: 122px;
@@ -145,6 +150,14 @@
 }
 .switchIndicator.explorer {
   background-color: var(--explorer-300);
+}
+
+.studentMode {
+  width: 114px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 

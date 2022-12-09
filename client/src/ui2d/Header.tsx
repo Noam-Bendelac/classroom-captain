@@ -5,6 +5,7 @@ import { useContext } from 'react'
 import { ControllerContext } from 'controller/controller'
 import { useStore } from 'zustand'
 import shallow from 'zustand/shallow'
+import { roleContext } from 'ui2d/App'
 
 
 
@@ -15,6 +16,8 @@ export function Header({
   className: string,
   classroomCode: string | null,
 }) {
+  const role = useContext(roleContext)
+  
   const store = useContext(ControllerContext)
   const { mode, setMode } = useStore(store,
     ({ mode, setMode }) => ({ mode, setMode }),
@@ -31,24 +34,46 @@ export function Header({
       </div>
     </div>
     <div className={styles.right}>
-        { classroomCode && <div className={styles.classCodeContainer}>
+      { role === 'teacher'
+      ? <div className={styles.classCodeContainer}>
           <p className={styles.classCodeLabel}>Class Code</p>
           <h2 className={styles.classCode}>{classroomCode}</h2>
-        </div> }
+        </div>
+      : role === 'student' &&
+        <div className={styles.classCodeContainer}>
+          <p className={styles.classCodeLabel}>Class Code</p>
+          <h2 className={styles.classCodeStudent}>{classroomCode}</h2>
+        </div>
+      }
 
+      { role === 'teacher' &&
         <div className={styles.studentsContainer}>
           <p className={styles.students}>23</p>
           <p className={styles.studentsLabel}>Explorers</p>
         </div>
+      }
 
-      <button className={styles.switch} onClick={() => setMode(mode === 'captain' ? 'explorer' : 'captain')}>
-        <div className={styles.switchContents}>
-          <div className={classNames(styles.switchIndicator, mode === 'captain' ? styles.captain : styles.explorer)}></div>
-          
-          <div className={classNames(styles.explorerText, mode === 'explorer' && styles.switchSelected)}><p>Explorer</p></div>
-          <div className={classNames(styles.captainText, mode === 'captain' && styles.switchSelected)}><p>Captain</p></div>
-        </div>
-      </button>
+      { role === 'teacher'
+      ? <button className={styles.switch} onClick={() => setMode(mode === 'captain' ? 'explorer' : 'captain')}>
+          <div className={styles.switchContents}>
+            <div className={classNames(styles.switchIndicator, mode === 'captain' ? styles.captain : styles.explorer)}></div>
+            
+            <div className={classNames(styles.explorerText, mode === 'explorer' && styles.switchSelected)}><p>Explorer</p></div>
+            <div className={classNames(styles.captainText, mode === 'captain' && styles.switchSelected)}><p>Captain</p></div>
+          </div>
+        </button>
+      : role === 'student' &&
+        <button className={styles.switch} style={{ width: 'unset' }} disabled>
+          <div className={styles.switchContents}>
+            {/* <div className={classNames(styles.switchIndicator, mode === 'captain' ? styles.captain : styles.explorer)}></div> */}
+            
+            <div className={classNames(styles.studentMode)}><p>
+              { mode === 'explorer' ? 'Explorer' : 'Captain'}
+            </p></div>
+          </div>
+        </button>
+      }
+      
     </div>
   </header>
 }

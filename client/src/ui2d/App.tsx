@@ -76,6 +76,7 @@ function HomePage({
       credentials: 'include',
     })
     if (resp.ok) {
+      setClassroomCode(localClassroomCode)
       setRole('student')
       push('/app')
     }
