@@ -72,6 +72,8 @@ class Classroom {
   
   /** @type {'explorer' | 'captain'} */
   mode = 'explorer'
+  /** @type {string} */
+  topic = 'magnetism'
   /** @type {[number, number, number]} */
   camera = [1,1,1]
   /** @type {string} */
@@ -209,12 +211,20 @@ wsServer.on('connection', (connection, req) => {
           if (classroom.mode === 'captain') {
             echoMessage(JSON.stringify({
               mode: classroom.mode,
-              // topic
+              topic: classroom.topic,
               camera: classroom.camera,
               func: classroom.func,
               x: classroom.x,
               y: classroom.y,
             }))
+          } else {
+            // switch back to explorer
+            echoMessage(text)
+          }
+        } else if (message.topic) {
+          classroom.topic = message.topic
+          if (classroom.mode === 'captain') {
+            echoMessage(text)
           }
         } else if (message.camera) {
           classroom.camera = message.camera

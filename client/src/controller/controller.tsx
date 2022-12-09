@@ -95,7 +95,8 @@ function useController() {
     createStore<StorePrivate>()(
     subscribeWithSelector((set, get) => construct<StorePrivate>({
       mode: 'explorer',
-      topic: 'multivar',
+      // cursed typescript hack
+      topic: 'magnetism' as 'multivar',
       
       cameraPosition: null,
       
@@ -131,7 +132,7 @@ function useController() {
           }
         }
       },
-      setFunc: func => {
+      setFunc: (func: BoxedExpression) => {
         if (role === 'teacher') {
           try {
             ws.send(JSON.stringify({ func: func.latex }))
@@ -186,6 +187,9 @@ function useController() {
           storePrivate.getState()._set({ mode: message.mode })
         }
         if (storePrivate.getState().mode === 'captain') {
+          if (message.topic && (message.topic === 'magnetism' || message.topic === 'multivar')) {
+            storePrivate.getState()._set({ topic: message.topic })
+          }
           if (message.camera && Array.isArray(message.camera)) {
             const [x, y, z] = message.camera
             storePrivate.getState()._set({ cameraPosition: new Vector3(x, y, z) })
