@@ -74,8 +74,10 @@ function Scene({
     
     <Environment files={'/assets/belfast_sunset_puresky_1k.hdr'} />
     
-    {/* <SceneContents /> */}
-    <MultivarScene />
+    { topic === 'magnetism'
+    ? <SceneContents />
+    : <MultivarScene />
+    }
   </group>
   
 }

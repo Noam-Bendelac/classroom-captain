@@ -6,6 +6,7 @@ import { Header } from 'ui2d/Header';
 import { Sidebar } from 'ui2d/Sidebar';
 import { Role, ControllerProvider, ControllerContext } from 'controller/controller';
 import { RightSideBar } from 'ui2d/RightSideBar';
+import { useStore } from 'zustand';
 
 
 declare global {
@@ -108,23 +109,35 @@ function DiagramPage({
   classroomCode: string | null,
 }) {
   
-  const canvasPanelRef = useRef<HTMLDivElement>(null)
   
   return (
     <ControllerProvider>
-      <div className={styles.app}>
-        <Header className={styles.header} classroomCode={classroomCode} />
-        <div className={styles.mainContent}>
-          <Sidebar className={styles.sidebar} />
-          <div ref={canvasPanelRef} className={styles.canvasPanel}>
-            <UI3D parentRef={canvasPanelRef} />
-            {/* possibly more ui on top of canvas */}
-            <RightSideBar className={styles.rightSideBar} />
-          </div>
-        </div>
-      </div>
+      <DiagramPageContents classroomCode={classroomCode} />
     </ControllerProvider>
   );
+}
+
+function DiagramPageContents({
+  classroomCode,
+}: {
+  classroomCode: string | null,
+}) {
+  const store = useContext(ControllerContext)
+  const topic = useStore(store, ({ topic }) => topic)
+  
+  const canvasPanelRef = useRef<HTMLDivElement>(null)
+  
+  return <div className={styles.app}>
+    <Header className={styles.header} classroomCode={classroomCode} />
+    <div className={styles.mainContent}>
+      <Sidebar className={styles.sidebar} />
+      <div ref={canvasPanelRef} className={styles.canvasPanel}>
+        <UI3D parentRef={canvasPanelRef} />
+        {/* possibly more ui on top of canvas */}
+        { topic === 'multivar' && <RightSideBar className={styles.rightSideBar} /> }
+      </div>
+    </div>
+  </div>
 }
 
 export default App;

@@ -23,3 +23,6 @@
   font: var(--cabin-20);
 }
 
+.topicButton {
+  cursor: pointer;
+}

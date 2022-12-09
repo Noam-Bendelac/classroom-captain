@@ -19,8 +19,8 @@ export function Header({
   const role = useContext(roleContext)
   
   const store = useContext(ControllerContext)
-  const { mode, setMode } = useStore(store,
-    ({ mode, setMode }) => ({ mode, setMode }),
+  const { mode, setMode, topic } = useStore(store,
+    ({ mode, setMode, topic }) => ({ mode, setMode, topic }),
     shallow
   )
   
@@ -29,8 +29,18 @@ export function Header({
     <div className={styles.left}>
       <img src={Back} alt="back" className={styles.back} /> 
       <div className={styles.topicContainer}>
-        <p className={styles.subject}> Physics / Electricity and Magnetism</p>
-        <h1 className={styles.topic}>Ch 29. The Magnetic Field</h1>
+        <p className={styles.subject}>
+          { topic === 'magnetism'
+          ? 'Physics / Electricity and Magnetism'
+          : 'Mathematics / Multivariable Calculus'
+          }
+        </p>
+        <h1 className={styles.topic}>
+          { topic === 'magnetism'
+          ? 'The Magnetic Field'
+          : 'Functions of Two Variables'
+          }
+        </h1>
       </div>
     </div>
     <div className={styles.right}>
