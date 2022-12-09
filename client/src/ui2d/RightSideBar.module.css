@@ -1,0 +1,79 @@
+
+
+.rightSideBar {
+  margin: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  font: var(--cabin-15);
+}
+
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  
+  width: 280px;
+  padding: 20px;
+  background: var(--neutral-100);
+  box-shadow: 0px 0px 25px -2px rgba(0, 0, 0, 0.25), inset 3px 3px 20px -2px rgba(0, 0, 0, 0.12);
+  border-radius: 15px;
+}
+
+/* .boxHeadings {
+  margin-bottom: 10px;
+} */
+
+.boxHeading {
+  font: var(--cabin-34);
+  line-height: 1;
+}
+
+.boxSubheading {
+  font: var(--cabin-20);
+}
+
+
+.functionRow {
+  display: flex;
+  gap: 5px;
+}
+
+
+.math {
+  display: inline-block;
+  font-size: 20px;
+}
+
+.inputMath {
+  flex-grow: 1;
+  cursor: text;
+  /* display: flex; */
+  border-bottom: 1px solid black;
+}
+
+.functionButton {
+  background: transparent;
+  /* border: 2px solid var(--gray-600); */
+  /* padding: 1px 5px; */
+  /* border-radius: 8px; */
+  color: var(--neutral-600);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sliderRow {
+  display: flex;
+  gap: 15px;
+}
+
+.sliderItem {
+  /* display: flex; */
+}
+
+.slider {
+  flex-grow: 1;
+}
+
+

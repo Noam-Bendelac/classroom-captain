@@ -34,14 +34,11 @@
   position: relative;
 }
 
-.canvasBox {
+.rightSideBar {
   position: absolute;
   top: 0;
   right: 0;
 }
 
 
-.math {
-  display: inline-block;
-}
 

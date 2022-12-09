@@ -75,8 +75,7 @@
   border-radius: 15px;
 }
 .students {
-  font: var(--cabin-24);
-  font-size: 34px;
+  font: var(--cabin-34);
   line-height: 0.8;
 }
 .studentsLabel {

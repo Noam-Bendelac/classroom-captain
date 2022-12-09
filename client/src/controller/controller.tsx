@@ -1,7 +1,8 @@
 import { BoxedExpression } from '@cortex-js/compute-engine'
-import React, { createContext, useEffect, useMemo } from 'react'
+import React, { createContext, useContext, useEffect, useMemo } from 'react'
 import { Vector3 } from 'three'
-import { CE } from 'ui3d/UI3D'
+import { roleContext } from 'ui2d/App'
+import { CE } from 'ui3d/MultivarScene'
 import { createStore, StoreApi as StoreApiCore, StoreMutators } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 
@@ -79,8 +80,8 @@ const construct = <T extends any>(t: T) => t
 
 
 
-function useController(role: Role) {
-  
+function useController() {
+  const role = useContext(roleContext)
   
   const ws = useMemo(() => {
     const ws = new WebSocket(`ws://${process.env.REACT_APP_BACKEND_HOSTPORT}/`)
@@ -137,19 +138,31 @@ function useController(role: Role) {
           }
           catch {}
         }
-        set({ func })
+        // we have control over func if teacher, or if student in explorer mode
+        // in other words, as long as we are not a student in captain mode
+        if (!(role === 'student' && get().mode === 'captain')) {
+          set({ func })
+        }
       },
       setX: x => {
         if (role === 'teacher') {
           ws.send(JSON.stringify({ x }))
         }
-        set({ x })
+        // we have control over sliders if teacher, or if student in explorer mode
+        // in other words, as long as we are not a student in captain mode
+        if (!(role === 'student' && get().mode === 'captain')) {
+          set({ x })
+        }
       },
       setY: y => {
         if (role === 'teacher') {
           ws.send(JSON.stringify({ y }))
         }
-        set({ y })
+        // we have control over sliders if teacher, or if student in explorer mode
+        // in other words, as long as we are not a student in captain mode
+        if (!(role === 'student' && get().mode === 'captain')) {
+          set({ y })
+        }
       },
       onCameraChange: (position) => {
         if (role === 'teacher' && get().mode === 'captain') {
@@ -158,15 +171,8 @@ function useController(role: Role) {
         }
       },
       
-      // _setMode: mode => set({ mode }),
-      // _setCameraPosition: position => set({ cameraPosition: position }),
-      
       _set: partial => set(partial),
       
-      // isTeacher: () => get().role === 'teacher',
-      // isStudent: () => get().role === 'student',
-      // inCaptain: () => get().mode === 'captain',
-      // inExplorer: () => get().mode === 'explorer',
     }))
   ), [ws, role])
   
@@ -201,12 +207,9 @@ export const ControllerContext = createContext<StoreApi<Store>>(null!)
 
 
 export function ControllerProvider({
-  role,
   children,
-}: React.PropsWithChildren & {
-  role: Role,
-}) {
-  const store = useController(role)
+}: React.PropsWithChildren) { 
+  const store = useController()
   
   window._store = store
   window.Vector3 = Vector3

@@ -1,13 +1,12 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef } from 'react'
+import React, { useContext, useEffect, useRef } from 'react'
 import { Canvas, useThree, useLoader } from '@react-three/fiber'
 import { Environment, OrbitControls as OrbitControlsDrei, OrthographicCamera } from '@react-three/drei'
-import { BoxGeometry, Color, CylinderGeometry, DoubleSide, Group, Mesh, PlaneGeometry, TextureLoader } from 'three'
+import { Color, DoubleSide, TextureLoader } from 'three'
 import { OrbitControls } from 'three-stdlib'
 import { ControllerContext } from 'controller/controller'
 import { useStore } from 'zustand'
-import { BoxedExpression, ComputeEngine } from '@cortex-js/compute-engine'
-// import { MeshLineGeometry, MeshLineMaterial } from 'meshline'
-import { useMemoCleanup } from '../util'
+import { MultivarScene } from 'ui3d/MultivarScene'
+import { roleContext } from 'ui2d/App'
 
 
 
@@ -45,6 +44,9 @@ function Scene({
   
   const topic = useStore(store, ({ topic }) => topic)
   
+  const role = useContext(roleContext)
+  const mode = useStore(store, ({ mode }) => mode)
+  
   const camera = useThree(({ camera }) => camera)
   
   useProperResize(parentRef)
@@ -65,6 +67,8 @@ function Scene({
       onChange={() => {
         onCameraChange(camera.position)
       }}
+      enabled={!(role === 'student' && mode === 'captain')}
+      enablePan={false}
       enableDamping={false}
     />
     
@@ -74,137 +78,6 @@ function Scene({
     <MultivarScene />
   </group>
   
-}
-
-
-export const CE = new ComputeEngine()
-
-function MultivarScene({  }: {  }) {
-  // make z up
-  return <group rotation={[-Math.PI/2, 0, -Math.PI/2]}>
-    <FunctionSurface />
-    <IntersectionCurve dir={'x'} />
-    <IntersectionCurve dir={'y'} />
-  </group>
-}
-
-function FunctionSurface({  }: {  }) {
-  
-  const geometry = useMemoCleanup(
-    useCallback(() => new PlaneGeometry(10, 10, 30, 30), []),
-    useCallback((geometry) => geometry.dispose(), []),
-  )
-  
-  const store = useContext(ControllerContext)
-  useEffect(() => store.subscribe(
-    (store) => store.topic === 'multivar' ? store.func : null,
-    func => {
-      if (func === null) return;
-      // here we treat z like up
-      const position = geometry.getAttribute('position')
-      for (let i = 0; i < position.count; i++) {
-        CE.set({ x: position.getX(i), y: position.getY(i) })
-        const z = func.N().valueOf() as number
-        if (!Number.isFinite(z)) break;
-        // console.log(z)
-        position.setZ(i, z)
-      }
-      position.needsUpdate = true
-      geometry.computeVertexNormals()
-    },
-    { fireImmediately: true }
-  ), [geometry, store])
-  
-  // by default, plane normal is towards z; because we are in z-up, this works fine
-  return <mesh geometry={geometry}>
-    <meshStandardMaterial
-      color={'red'}
-      opacity={0.7}
-      transparent
-      roughness={0.3}
-      metalness={0}
-      side={DoubleSide}
-    />
-  </mesh>
-}
-
-
-function IntersectionCurve({ dir, }: { dir: 'x' | 'y' }) {
-  // const geometry = useMemoCleanup(
-  //   useCallback(() => new MeshLineGeometry(), []),
-  //   useCallback((geometry) => geometry.dispose(), []),
-  // )
-  const geometries = useMemoCleanup(
-    useCallback(() => Array.from({ length: 4 }, () => new PlaneGeometry(10, 1, 30, 1)), []),
-    useCallback((geometries) => geometries.forEach(g => g.dispose()), []),
-  )
-  
-  const groupRef = useRef<Group>(null)
-  
-  const store = useContext(ControllerContext)
-  useEffect(() => store.subscribe(
-    (store) => store.topic === 'multivar' ? [
-      store.func,
-      // if in x direction, the constant is y
-      dir === 'x' ? store.y : store.x,
-    ] as const : null,
-    state => {
-      if (state === null) return;
-      const [func, constant] = state
-      
-      // here we are in z-up
-      
-      // position y at constant if dir is x; position x at constant if dir is y
-      groupRef.current?.position.setScalar(0).setComponent(dir === 'x' ? 1 : 0, constant)
-      if (dir === 'x') {
-        groupRef.current?.rotation.set(0,0,0)
-      } else {
-        groupRef.current?.rotation.set(0, 0, Math.PI/2)
-      }
-      
-      // here we treat z like up, position.x is always the progress along the line,
-      // and position.y is always the slider constant
-      const positions = geometries.map(g => g.getAttribute('position'))
-      // console.log(position)
-      const halfCount = positions[0].count / 2
-      for (let i = 0; i < halfCount; i++) {
-        const progress = positions[0].getX(i)
-        if (dir === 'x') {
-          CE.set({ x: progress, y: constant })
-        } else {
-          CE.set({ x: constant, y: progress })
-        }
-        const z = func.N().valueOf() as number
-        if (!Number.isFinite(z)) break;
-        const width = 0.15
-        const height = 0.05
-        positions[3].setXYZ(i + halfCount, progress, constant + 0,     z + height)
-        positions[0].setXYZ(i,             progress, constant + 0,     z + height)
-        positions[0].setXYZ(i + halfCount, progress, constant + width, z + 0)
-        positions[1].setXYZ(i,             progress, constant + width, z + 0)
-        positions[1].setXYZ(i + halfCount, progress, constant + 0,     z - height)
-        positions[2].setXYZ(i,             progress, constant + 0,     z - height)
-        positions[2].setXYZ(i + halfCount, progress, constant - width, z + 0)
-        positions[3].setXYZ(i,             progress, constant - width, z + 0)
-      }
-      positions.forEach(p => { p.needsUpdate = true })
-      geometries.forEach(g => g.computeVertexNormals())
-    },
-    { fireImmediately: true }
-  ), [dir, geometries, store])
-  
-  return <group ref={groupRef}>
-    { geometries.map(geometry => <mesh geometry={geometry}>
-      <meshStandardMaterial
-        color={'green'}
-        // opacity={0.8}
-        // transparent
-        roughness={0.3}
-        metalness={1}
-        side={DoubleSide}
-      />
-    </mesh>)}
-  </group>
 }
 
 

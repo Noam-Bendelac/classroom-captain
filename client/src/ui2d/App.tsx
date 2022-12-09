@@ -1,15 +1,12 @@
-import React, { Dispatch, HTMLAttributes, PropsWithChildren, useContext, useDebugValue, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, Dispatch, useContext, useRef, useState } from 'react';
 import { BrowserRouter as Router, Switch, Route, useHistory } from "react-router-dom"
 import styles from './App.module.css';
-import { CE, UI3D } from 'ui3d/UI3D'
+import { UI3D } from 'ui3d/UI3D'
 import { Header } from 'ui2d/Header';
 import { Sidebar } from 'ui2d/Sidebar';
 import { Role, ControllerProvider, ControllerContext } from 'controller/controller';
-import { MathfieldElement, MathfieldElementAttributes } from 'mathlive'
-// import { BoxedExpression, ComputeEngine } from '@cortex-js/compute-engine'
-import { useStore } from 'zustand';
+import { RightSideBar } from 'ui2d/RightSideBar';
 
-// const CE = new ComputeEngine()
 
 declare global {
   interface Window {
@@ -19,21 +16,8 @@ declare global {
   }
 }
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      ['math-field']: PropsWithChildren<Partial<
-        MathfieldElementAttributes &
-        HTMLAttributes<HTMLElement> & {
-          // onChange?: () => void,
-          // onInput?: () => void,
-          ref?: React.Ref<MathfieldElement>,
-          key?: React.Key,
-        }
-      >>;
-    }
-  }
-}
+
+export const roleContext = createContext<Role>('neither')
 
 
 function App() {
@@ -42,19 +26,21 @@ function App() {
   
   window._setRole = setRole
   
-  return <Router>
-    <Switch>
-      <Route exact path="/">
-        <HomePage setRole={setRole} setClassroomCode={setClassroomCode} />
-      </Route>
-      <Route path="/app">
-        <DiagramPage role={role} classroomCode={classroomCode} />
-      </Route>
-      <Route>
-        <div>404</div>
-      </Route>
-    </Switch>
-  </Router>
+  return <roleContext.Provider value={role}>
+    <Router>
+      <Switch>
+        <Route exact path="/">
+          <HomePage setRole={setRole} setClassroomCode={setClassroomCode} />
+        </Route>
+        <Route path="/app">
+          <DiagramPage classroomCode={classroomCode} />
+        </Route>
+        <Route>
+          <div>404</div>
+        </Route>
+      </Switch>
+    </Router>
+  </roleContext.Provider>
 }
 
 // function Page404() {
@@ -116,17 +102,15 @@ function HomePage({
 
 
 function DiagramPage({
-  role,
   classroomCode,
 }: {
-  role: Role,
   classroomCode: string | null,
 }) {
   
   const canvasPanelRef = useRef<HTMLDivElement>(null)
   
   return (
-    <ControllerProvider role={role}>
+    <ControllerProvider>
       <div className={styles.app}>
         <Header className={styles.header} classroomCode={classroomCode} />
         <div className={styles.mainContent}>
@@ -134,66 +118,12 @@ function DiagramPage({
           <div ref={canvasPanelRef} className={styles.canvasPanel}>
             <UI3D parentRef={canvasPanelRef} />
             {/* possibly more ui on top of canvas */}
-            <RightPanel />
+            <RightSideBar className={styles.rightSideBar} />
           </div>
         </div>
       </div>
     </ControllerProvider>
   );
-}
-
-function RightPanel() {
-  // const [math, setMath] = useState<BoxedExpression>(CE.parse('f(x,y)=0.1(x^2+y^2)'))
-  const store = useContext(ControllerContext)
-  const setFunc = useStore(store, (store) => store.topic === 'multivar' ? store.setFunc : null)
-  // const func = useStore(store, (store) => store.topic === 'multivar' ? store.func : null)
-  useEffect(() => store.subscribe(
-    (store) => store.topic === 'multivar' ? store.func : null,
-    func => {
-      if (func === null) return;
-      // TODO if student and captain mode
-    }
-  ))
-  
-  const mathField = useRef<MathfieldElement>(null)
-  
-  console.log('rerender')
-  
-  // due to weirdness in mathlive's typescript/npm package setup, we must reference
-  // the *class* not just the *type* in our code for the library to work
-  useDebugValue(MathfieldElement)
-  
-  useEffect(() => {
-    // setTimeout(() => {
-    const field = mathField.current
-    console.log(field)
-    const handler = () => {
-      const val = field?.value
-      const expr = CE.parse(val!)
-      console.log(expr);
-      // console.log(expr.N().valueOf());
-      // console.log({json})
-      setFunc?.(expr)
-    }
-    handler()
-    field?.addEventListener('input', handler)
-    // }, 1000)
-    
-    return () => field?.removeEventListener('input', handler)
-  }, [mathField, setFunc])
-  
-  return <div className={styles.canvasBox}>
-    <math-field read-only class={styles.math}>{"f(x,y)="}</math-field>
-    <math-field ref={mathField}
-      class={styles.math}
-      virtual-keyboard-mode={'off'}
-      // read-only
-    >
-      {/* {"f(x,y)=\\placeholder[rhs]{0.1*(x^2+y^2)}"} */}
-      {"0.1(x^2+y^2)"}
-      {/* {func?.latex} */}
-    </math-field>
-  </div>
 }
 
 export default App;
