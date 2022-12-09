@@ -30,6 +30,14 @@
   /* don't resize to child canvas, so we can measure this div's size */
   overflow: hidden;
   background: var(--neutral-20);
+  
+  position: relative;
+}
+
+.canvasBox {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 
