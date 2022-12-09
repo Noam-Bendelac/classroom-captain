@@ -1,11 +1,12 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef } from 'react'
 import { Canvas, useThree, useLoader } from '@react-three/fiber'
 import { Environment, OrbitControls as OrbitControlsDrei, OrthographicCamera } from '@react-three/drei'
-import { Color, DoubleSide, PlaneGeometry, TextureLoader } from 'three'
+import { BoxGeometry, Color, CylinderGeometry, DoubleSide, Group, Mesh, PlaneGeometry, TextureLoader } from 'three'
 import { OrbitControls } from 'three-stdlib'
 import { ControllerContext } from 'controller/controller'
 import { useStore } from 'zustand'
 import { BoxedExpression, ComputeEngine } from '@cortex-js/compute-engine'
+// import { MeshLineGeometry, MeshLineMaterial } from 'meshline'
 import { useMemoCleanup } from '../util'
 
 
@@ -79,9 +80,12 @@ function Scene({
 export const CE = new ComputeEngine()
 
 function MultivarScene({  }: {  }) {
-  return <>
+  // make z up
+  return <group rotation={[-Math.PI/2, 0, -Math.PI/2]}>
     <FunctionSurface />
-  </>
+    <IntersectionCurve dir={'x'} />
+    <IntersectionCurve dir={'y'} />
+  </group>
 }
 
 function FunctionSurface({  }: {  }) {
@@ -109,19 +113,98 @@ function FunctionSurface({  }: {  }) {
       geometry.computeVertexNormals()
     },
     { fireImmediately: true }
-  ))
+  ), [geometry, store])
   
-  // by default, plane normal is towards z; here we make z up
-  return <mesh geometry={geometry} rotation={[-Math.PI/2, 0, -Math.PI/2]}>
+  // by default, plane normal is towards z; because we are in z-up, this works fine
+  return <mesh geometry={geometry}>
     <meshStandardMaterial
       color={'red'}
-      // opacity={0.8}
-      // transparent
+      opacity={0.7}
+      transparent
       roughness={0.3}
-      metalness={1}
+      metalness={0}
       side={DoubleSide}
     />
   </mesh>
+}
+
+
+function IntersectionCurve({ dir, }: { dir: 'x' | 'y' }) {
+  // const geometry = useMemoCleanup(
+  //   useCallback(() => new MeshLineGeometry(), []),
+  //   useCallback((geometry) => geometry.dispose(), []),
+  // )
+  const geometries = useMemoCleanup(
+    useCallback(() => Array.from({ length: 4 }, () => new PlaneGeometry(10, 1, 30, 1)), []),
+    useCallback((geometries) => geometries.forEach(g => g.dispose()), []),
+  )
+  
+  const groupRef = useRef<Group>(null)
+  
+  const store = useContext(ControllerContext)
+  useEffect(() => store.subscribe(
+    (store) => store.topic === 'multivar' ? [
+      store.func,
+      // if in x direction, the constant is y
+      dir === 'x' ? store.y : store.x,
+    ] as const : null,
+    state => {
+      if (state === null) return;
+      const [func, constant] = state
+      
+      // here we are in z-up
+      
+      // position y at constant if dir is x; position x at constant if dir is y
+      groupRef.current?.position.setScalar(0).setComponent(dir === 'x' ? 1 : 0, constant)
+      if (dir === 'x') {
+        groupRef.current?.rotation.set(0,0,0)
+      } else {
+        groupRef.current?.rotation.set(0, 0, Math.PI/2)
+      }
+      
+      // here we treat z like up, position.x is always the progress along the line,
+      // and position.y is always the slider constant
+      const positions = geometries.map(g => g.getAttribute('position'))
+      // console.log(position)
+      const halfCount = positions[0].count / 2
+      for (let i = 0; i < halfCount; i++) {
+        const progress = positions[0].getX(i)
+        if (dir === 'x') {
+          CE.set({ x: progress, y: constant })
+        } else {
+          CE.set({ x: constant, y: progress })
+        }
+        const z = func.N().valueOf() as number
+        if (!Number.isFinite(z)) break;
+        const width = 0.15
+        const height = 0.05
+        positions[3].setXYZ(i + halfCount, progress, constant + 0,     z + height)
+        positions[0].setXYZ(i,             progress, constant + 0,     z + height)
+        positions[0].setXYZ(i + halfCount, progress, constant + width, z + 0)
+        positions[1].setXYZ(i,             progress, constant + width, z + 0)
+        positions[1].setXYZ(i + halfCount, progress, constant + 0,     z - height)
+        positions[2].setXYZ(i,             progress, constant + 0,     z - height)
+        positions[2].setXYZ(i + halfCount, progress, constant - width, z + 0)
+        positions[3].setXYZ(i,             progress, constant - width, z + 0)
+      }
+      positions.forEach(p => { p.needsUpdate = true })
+      geometries.forEach(g => g.computeVertexNormals())
+    },
+    { fireImmediately: true }
+  ), [dir, geometries, store])
+  
+  return <group ref={groupRef}>
+    { geometries.map(geometry => <mesh geometry={geometry}>
+      <meshStandardMaterial
+        color={'green'}
+        // opacity={0.8}
+        // transparent
+        roughness={0.3}
+        metalness={1}
+        side={DoubleSide}
+      />
+    </mesh>)}
+  </group>
 }
 
 
