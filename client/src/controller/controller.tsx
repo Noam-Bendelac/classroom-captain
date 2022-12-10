@@ -84,9 +84,11 @@ function useController() {
   const role = useContext(roleContext)
   
   const ws = useMemo(() => {
-    const ws = new WebSocket(`ws://${process.env.REACT_APP_BACKEND_HOSTPORT}/`)
+    const ws = process.env.REACT_APP_BACKEND === 'true'
+      ? new WebSocket(`ws${process.env.REACT_APP_SECURE === 'true' ? 's' : ''}://${process.env.REACT_APP_BACKEND_HOSTPORT}/`)
+      : null
     
-    ws.addEventListener('error', evt => console.log('ws error!', evt))
+    ws?.addEventListener('error', evt => console.log('ws error!', evt))
     return ws
   }, [role])
   
@@ -107,13 +109,13 @@ function useController() {
       setMode: (mode) => {
         if (role === 'teacher') {
           set({ mode })
-          ws.send(JSON.stringify({ mode }))
+          ws?.send(JSON.stringify({ mode }))
         }
       },
       setTopic: (topic) => {
         if (role === 'teacher') {
           // if teacher, update server
-          ws.send(JSON.stringify({ topic }))
+          ws?.send(JSON.stringify({ topic }))
         }
         // we have control over topic if teacher, or if student in explorer mode
         // in other words, as long as we are not a student in captain mode
@@ -135,7 +137,7 @@ function useController() {
       setFunc: (func: BoxedExpression) => {
         if (role === 'teacher') {
           try {
-            ws.send(JSON.stringify({ func: func.latex }))
+            ws?.send(JSON.stringify({ func: func.latex }))
           }
           catch {}
         }
@@ -147,7 +149,7 @@ function useController() {
       },
       setX: x => {
         if (role === 'teacher') {
-          ws.send(JSON.stringify({ x }))
+          ws?.send(JSON.stringify({ x }))
         }
         // we have control over sliders if teacher, or if student in explorer mode
         // in other words, as long as we are not a student in captain mode
@@ -157,7 +159,7 @@ function useController() {
       },
       setY: y => {
         if (role === 'teacher') {
-          ws.send(JSON.stringify({ y }))
+          ws?.send(JSON.stringify({ y }))
         }
         // we have control over sliders if teacher, or if student in explorer mode
         // in other words, as long as we are not a student in captain mode
@@ -168,7 +170,7 @@ function useController() {
       onCameraChange: (position) => {
         if (role === 'teacher') {
           // will possibly throttle here
-          ws.send(JSON.stringify({ camera: position.toArray() }))
+          ws?.send(JSON.stringify({ camera: position.toArray() }))
         }
       },
       
@@ -179,7 +181,7 @@ function useController() {
   
   
   useEffect(() => {
-    ws.addEventListener('message', (evt: MessageEvent<string>) => {
+    ws?.addEventListener('message', (evt: MessageEvent<string>) => {
       console.log('message!', evt)
       if (role === 'student') {
         const message: Record<string, string | number | number[]> = JSON.parse(evt.data)
