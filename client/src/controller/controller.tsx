@@ -84,8 +84,8 @@ function useController() {
   const role = useContext(roleContext)
   
   const ws = useMemo(() => {
-    const ws = process.env.REACT_APP_BACKEND === 'true'
-      ? new WebSocket(`ws${process.env.REACT_APP_SECURE === 'true' ? 's' : ''}://${process.env.REACT_APP_BACKEND_HOSTPORT}/`)
+    const ws = process.env.REACT_APP_BACKEND_HOST
+      ? new WebSocket(`ws${process.env.REACT_APP_SECURE === 'true' ? 's' : ''}://${process.env.REACT_APP_BACKEND_HOST}/`)
       : null
     
     ws?.addEventListener('error', evt => console.log('ws error!', evt))

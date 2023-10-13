@@ -29,7 +29,7 @@ function App() {
   window._setRole = setRole
   
   return <roleContext.Provider value={role}>
-    { process.env.REACT_APP_DEMO
+    { process.env.REACT_APP_BACKEND_HOST
     ? <Router>
         <Switch>
           <Route exact path="/">
@@ -71,7 +71,7 @@ function HomePage({
   
   const { push } = useHistory()
   const teacher = async () => {
-    const resp = await fetch(`http://${process.env.REACT_APP_BACKEND_HOSTPORT}/classrooms`, {
+    const resp = await fetch(`http${process.env.REACT_APP_SECURE === 'true' ? 's' : ''}://${process.env.REACT_APP_BACKEND_HOST}/classrooms`, {
       method: 'POST',
       credentials: 'include',
     }).then(r => r.json()) as { classroomCode: string }
@@ -80,7 +80,7 @@ function HomePage({
     push('/app')
   }
   const student = async () => {
-    const resp = await fetch(`http://${process.env.REACT_APP_BACKEND_HOSTPORT}/classrooms/${localClassroomCode}/students`, {
+    const resp = await fetch(`http${process.env.REACT_APP_SECURE === 'true' ? 's' : ''}://${process.env.REACT_APP_BACKEND_HOST}/classrooms/${localClassroomCode}/students`, {
       method: 'POST',
       credentials: 'include',
     })
