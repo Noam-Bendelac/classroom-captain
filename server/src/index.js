@@ -1,6 +1,13 @@
-const express = require("express");
+const express = require("express")
+
+const https = require('https')
+const http = require('http')
+const fs = require('fs')
+const path = require('path')
 
 const ws = require('ws')
+
+require('dotenv').config()
 
 
 const bodyParser = require("body-parser")
@@ -10,8 +17,13 @@ const cors = require('cors')
 // Setting up the server
 var app = express()
 
+const httpsOptions = process.env.NODE_TLS_CERT_PATH !== undefined && {
+  key: fs.readFileSync(path.join(process.env.NODE_TLS_CERT_PATH, 'privkey.pem')),
+  cert: fs.readFileSync(path.join(process.env.NODE_TLS_CERT_PATH, 'fullchain.pem')),
+}
+
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: process.env.NODE_CORS_ORIGINS.split(','),
   // https://stackoverflow.com/questions/43772830/access-control-allow-credentials-header-in-the-response-is-which-must-be-t
   credentials: true,
 }))
@@ -28,7 +40,6 @@ app.use(cookieParser('sanath'));
 app.use(bodyParser.urlencoded({
   extended: true
 }));
-const port = 1234;
 
 
 // class definitions of records with jsdoc type definitions for vscode
@@ -129,6 +140,8 @@ app.post('/classrooms', (req,res)=>{
   console.log(classroom)
   
   res.cookie('tempId', teacher.id, {
+    sameSite: 'none',
+    secure: true,
     maxAge: 1000 * 60 * 60 * 24 // expire after 24 hours
   })
   
@@ -149,6 +162,8 @@ app.post("/classrooms/:classroomId/students", (req, res) => {
     console.log(classroom)
     
     res.cookie('tempId', student.id, {
+      sameSite: 'none',
+      secure: true,
       maxAge: 1000 * 60 * 60 * 24 // expire after 24 hours
     })
     
@@ -159,10 +174,11 @@ app.post("/classrooms/:classroomId/students", (req, res) => {
   }
 });
 
-const httpServer = app.listen(port, () => {
-  console.log(`Example app listening on port ${port}!`);
-});
-
+const httpServer = httpsOptions ? https.createServer(httpsOptions, app) : http.createServer(app)
+httpServer.listen(process.env.NODE_PORT, () => {
+  console.log(`Protocol: ${httpsOptions ? 'https' : 'http'}`)
+  console.log(`Classroom Captain app listening on port ${process.env.NODE_PORT}!`);
+})
 
 
 function tryExpr(block) {
