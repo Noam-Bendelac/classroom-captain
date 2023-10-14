@@ -18,8 +18,8 @@ const cors = require('cors')
 var app = express()
 
 const httpsOptions = process.env.NODE_TLS_CERT_PATH !== undefined && {
-  key: fs.readFileSync(path.join(process.env.NODE_TLS_CERT_PATH, 'privkey.pem')),
-  cert: fs.readFileSync(path.join(process.env.NODE_TLS_CERT_PATH, 'fullchain.pem')),
+  key: fs.readFileSync(fs.realpathSync(path.join(process.env.NODE_TLS_CERT_PATH, 'privkey.pem'))),
+  cert: fs.readFileSync(fs.realpathSync(path.join(process.env.NODE_TLS_CERT_PATH, 'fullchain.pem'))),
 }
 
 app.use(cors({
