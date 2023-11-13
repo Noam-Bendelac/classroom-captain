@@ -8,6 +8,7 @@ import { Role, ControllerProvider, ControllerContext } from 'controller/controll
 import { RightSideBar } from 'ui2d/RightSideBar';
 import { useStore } from 'zustand';
 import { ApiDemoPage } from 'ui2d/ApiDemoPage';
+import { MultiplayerDemoPage } from 'ui2d/MultiplayerDemoPage';
 
 
 declare global {
@@ -37,6 +38,9 @@ function App() {
           </Route>
           <Route path="/api">
             <ApiDemoPage />
+          </Route>
+          <Route path="/demo">
+            <MultiplayerDemoPage />
           </Route>
           <Route path="/app">
             <DiagramPage classroomCode={classroomCode} />
