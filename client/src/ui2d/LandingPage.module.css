@@ -1,0 +1,77 @@
+
+
+
+
+.page {
+  height: 100%;
+  
+  background: var(--neutral-20);
+  
+  font: var(--cabin-34);
+  font-size: 30px;
+}
+.page main {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+  
+  margin: auto;
+  padding-top: 100px;
+  width: 900px;
+}
+.page a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cta {
+  background: var(--neutral-100);
+  border-radius: 50px;
+  height: 140px;
+  box-sizing: border-box;
+  padding: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.teacher {
+  composes: cta;
+}
+.teacher:hover {
+  background: var(--neutral-150);
+}
+
+.student {
+  composes: cta;
+  gap: 20px;
+}
+
+.student input {
+  border: none;
+  border-radius: 25px;
+  height: 50px;
+  width: 140px;
+  box-sizing: border-box;
+  margin-left: 40px;
+  padding-inline: 5px;
+  font: inherit;
+  text-align: center;
+}
+.student button {
+  background: var(--neutral-150);
+  border-radius: 25px;
+  height: 50px;
+  padding-inline: 20px;
+  cursor: pointer;
+}
+.student button:hover {
+  background: var(--neutral-250);
+}
+
+
+.demo {
+  text-align: center;
+  margin-top: 100px;
+  font: var(--cabin-15);
+  font-weight: 500;
+}

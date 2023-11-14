@@ -1,5 +1,5 @@
-import React, { createContext, Dispatch, useContext, useRef, useState } from 'react';
-import { BrowserRouter as Router, Switch, Route, useHistory } from "react-router-dom"
+import React, { createContext, useContext, useRef, useState } from 'react';
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
 import styles from './App.module.css';
 import { UI3D } from 'ui3d/UI3D'
 import { Header } from 'ui2d/Header';
@@ -9,6 +9,7 @@ import { RightSideBar } from 'ui2d/RightSideBar';
 import { useStore } from 'zustand';
 import { ApiDemoPage } from 'ui2d/ApiDemoPage';
 import { MultiplayerDemoPage } from 'ui2d/MultiplayerDemoPage';
+import { LandingPage } from 'ui2d/LandingPage';
 
 
 declare global {
@@ -34,7 +35,7 @@ function App() {
     ? <Router>
         <Switch>
           <Route exact path="/">
-            <HomePage setRole={setRole} setClassroomCode={setClassroomCode} />
+            <LandingPage setRole={setRole} setClassroomCode={setClassroomCode} />
           </Route>
           <Route path="/api">
             <ApiDemoPage />
@@ -60,59 +61,7 @@ function App() {
 //   return <div>404</div>
 // }
 
-function HomePage({
-  setRole,
-  setClassroomCode,
-}: {
-  setRole: Dispatch<Role>,
-  setClassroomCode: Dispatch<string>,
-}) {
-  const [localClassroomCode, setLocalClassroomCode] = useState('')
-  
-  // useEffect(() => {
-    
-  // }), [localClassroomCode]
-  
-  const { push } = useHistory()
-  const teacher = async () => {
-    const resp = await fetch(`http${process.env.REACT_APP_SECURE === 'true' ? 's' : ''}://${process.env.REACT_APP_BACKEND_HOST}/classrooms`, {
-      method: 'POST',
-      credentials: 'include',
-    }).then(r => r.json()) as { classroomCode: string }
-    setClassroomCode(resp.classroomCode)
-    setRole('teacher')
-    push('/app')
-  }
-  const student = async () => {
-    const resp = await fetch(`http${process.env.REACT_APP_SECURE === 'true' ? 's' : ''}://${process.env.REACT_APP_BACKEND_HOST}/classrooms/${localClassroomCode}/students`, {
-      method: 'POST',
-      credentials: 'include',
-    })
-    if (resp.ok) {
-      setClassroomCode(localClassroomCode)
-      setRole('student')
-      push('/app')
-    }
-  }
-  return <div>
-    <p>
-      <a href="#_" onClick={(e) => {
-        e.preventDefault()
-        teacher()
-      }}>Teacher</a>
-    </p>
-    <p>
-      <a href="#_" onClick={(e) => {
-        e.preventDefault()
-        student()
-      }}>Student</a>
-      <input type="text" name="code" id="code"
-        value={localClassroomCode}
-        onChange={(e) => setLocalClassroomCode(e.target.value)}
-      />
-    </p>
-  </div>
-}
+
 
 
 function DiagramPage({
